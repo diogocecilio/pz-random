@@ -8,7 +8,7 @@
 
 #include "pzmaterial.h"
 #include "pzadmchunk.h"
-#include "pzelast3d.h"
+//#include "pzelast3d.h"
 //#include "pzviscoelastic.h"
 
 /**
@@ -124,27 +124,27 @@ fMemory(mat.fMemory), fDefaultMem(mat.fDefaultMem), fUpdateMem(mat.fUpdateMem){ 
 template <class TMEM, class TFather>
 TPZMatWithMem<TMEM,TFather>::~TPZMatWithMem(){ }
 
-template <>
-inline void TPZMatWithMem<TPZFMatrix<STATE>,TPZElasticity3D>::PrintMem(std::ostream &out, const int memory)
-{
-	
-    out << "\nTPZMatWithMem<TPZFMatrix,TPZElasticity3D> Material\n";
-    out << "\n fDefaultMem = \n" << fDefaultMem;
-    out << "\n fUpdateMem = " << fUpdateMem;
-    int i, size = fMemory.NElements();
-    out << "\n fMemory with " << size << " elements";
-    if(memory)
-    {
-        out << "\n fMemory elements:";
-        for(i = 0; i < size; i++)
-        {
-            out << "\n " << i << ": "; 
-            fMemory[i].Print("visc",out);
-        }
-    }
-    out << "\nEnd of TPZMatWithMem<TPZFMatrix,TPZElasticity3D >::Print\n";
-    TPZElasticity3D::Print(out);
-}
+// template <>
+// inline void TPZMatWithMem<TPZFMatrix<STATE>,TPZElasticity3D>::PrintMem(std::ostream &out, const int memory)
+// {
+//
+//     out << "\nTPZMatWithMem<TPZFMatrix,TPZElasticity3D> Material\n";
+//     out << "\n fDefaultMem = \n" << fDefaultMem;
+//     out << "\n fUpdateMem = " << fUpdateMem;
+//     int i, size = fMemory.NElements();
+//     out << "\n fMemory with " << size << " elements";
+//     if(memory)
+//     {
+//         out << "\n fMemory elements:";
+//         for(i = 0; i < size; i++)
+//         {
+//             out << "\n " << i << ": ";
+//             fMemory[i].Print("visc",out);
+//         }
+//     }
+//     out << "\nEnd of TPZMatWithMem<TPZFMatrix,TPZElasticity3D >::Print\n";
+//     TPZElasticity3D::Print(out);
+// }
 
 
 

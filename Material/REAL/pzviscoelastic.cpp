@@ -42,10 +42,10 @@ void TPZViscoelastic::SetMaterialDataHooke(STATE ElaE, STATE poissonE, STATE Ela
 	STATE muE = ElaE/(2*(1+poissonE));
 	STATE lambdaV = (poissonV * ElaV)/((1+poissonV)*(1-2*poissonV));
 	STATE muV = ElaV/(2*(1+poissonV));
-	fLambdaV = lambdaV; 
+	fLambdaV = lambdaV;
 	fmuV = muV;
 	STATE lambdaVE = lambdaE-(fDeltaT*lambdaV)/(1+fAlpha*fDeltaT);
-	STATE muVE = muE -(fDeltaT*muV)/(1+fAlpha*fDeltaT); 
+	STATE muVE = muE -(fDeltaT*muV)/(1+fAlpha*fDeltaT);
 	STATE ElaVE = muVE*(3*lambdaVE+2*muVE)/(lambdaVE+muVE);
 	STATE PoissonVE = lambdaVE/(2*(lambdaVE+muVE));
 	if (lambdaVE < 0 || muVE < 0)
