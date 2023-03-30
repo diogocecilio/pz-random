@@ -50,7 +50,7 @@
 
 typedef TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> LEMC;
 
-
+void GravityIncrease ( TPZCompMesh * cmesh );
 typedef   TPZMatElastoPlastic2D <LEMC, TPZElastoPlasticMem > plasticmat;
 
 TPZGeoMesh * CreateGMeshQuadrado(int ref);
@@ -109,12 +109,12 @@ int main()
 void MonteCarlo()
 {
     int ref=0;
-    int porder=2;
+    int porder=1;
     TPZGeoMesh *gmesh = CreateGMeshQuadrado(ref);
 
     TPZCompMesh * cmeshfield;
     TPZCompMesh*  cmeshfield2;
-    if(true)
+    if(false)
     {
          cmeshfield =  ComputeField(gmesh,porder);
          return;
@@ -138,7 +138,7 @@ void MonteCarlo()
 
     ofstream out("displacement.dat");
 
-    for(int imc=0;imc<2;imc++)
+    for(int imc=0;imc<1;imc++)
     {
         std::cout << "imc = " <<  imc << std::endl;
         REAL uy= SolveElastoplastic(cmeshfield,cmeshfield2,imc);
@@ -147,6 +147,7 @@ void MonteCarlo()
 
 
 }
+
 
 REAL SolveElastoplastic(TPZCompMesh * rcmesh1,TPZCompMesh * rcmesh2,int imc)
 {
@@ -165,13 +166,9 @@ REAL SolveElastoplastic(TPZCompMesh * rcmesh1,TPZCompMesh * rcmesh2,int imc)
     SetRandomField(rcmesh1,rcmesh2,cmesh,imc);
 
     TPZElastoPlasticAnalysis *analysis =  CreateAnalysis(cmesh);
-    REAL tolfs =0.1;
-    int numiterfs =40;
-    REAL tolres = 1.e-3;
-    int numiterres =20;
-    REAL l =0.1;
-    REAL lambda0=1.;
-    analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0);
+
+     GravityIncrease ( cmesh );
+
     TPZVec<REAL> xd(3);
     xd[0]=35.;
     xd[1]= 40.;
@@ -195,6 +192,55 @@ REAL SolveElastoplastic(TPZCompMesh * rcmesh1,TPZCompMesh * rcmesh2,int imc)
 
     return sol;
 }
+
+// REAL SolveElastoplastic(TPZCompMesh * rcmesh1,TPZCompMesh * rcmesh2,int imc)
+// {
+//
+//     TPZGeoMesh *gmesh = rcmesh1->Reference();
+//
+//     int porder = rcmesh1->GetDefaultOrder();
+//
+//     TPZCompMesh * cmesh = CreateCompMeshMatWithMem(gmesh,porder);
+//
+//     REAL factor =1.;
+//     REAL gammasolo=20.;
+//     REAL gammaagua=0.;
+//     LoadingRamp ( cmesh,factor  , gammasolo,  gammaagua);
+//
+//     SetRandomField(rcmesh1,rcmesh2,cmesh,imc);
+//
+//     TPZElastoPlasticAnalysis *analysis =  CreateAnalysis(cmesh);
+//     REAL tolfs =0.1;
+//     int numiterfs =40;
+//     REAL tolres = 1.e-3;
+//     int numiterres =20;
+//     REAL l =0.1;
+//     REAL lambda0=1.;
+//     analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0);
+//
+//     TPZVec<REAL> xd(3);
+//     xd[0]=35.;
+//     xd[1]= 40.;
+//     REAL sol = fabs(FindSol(cmesh,xd));
+//
+//     std::cout << "top displacement = " << sol << std::endl;
+//
+//      TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
+//      CreatePostProcessingMesh ( postprocdeter, cmesh );
+//
+//     TPZVec<int> PostProcMatIds ( 1,1 );
+//
+//     TPZStack<std::string> PostProcVars, scalNames, vecNames;
+//
+//     PostProcessVariables ( scalNames, vecNames );
+//
+//     string vtk = "postprocess.vtk";
+//     postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
+//
+//     postprocdeter->PostProcess ( 0 );
+//
+//     return sol;
+// }
 
 
 TPZCompMesh * ComputeField(TPZGeoMesh *gmesh,int porder)
@@ -398,6 +444,7 @@ TPZGeoMesh * CreateGMeshQuadrado(int ref)
     string file ="/home/diogo/projects/pz/data/teste-coarse.msh";
     //string file ="/home/diogo/projects/pz/data/teste.msh";
 
+    //string file ="/home/diogo/projects/pz-random/data/tri748.msh";
     readgidmesh read;
 
     std::vector<std::vector<int>> meshtopol;
@@ -907,9 +954,9 @@ REAL FindSol(TPZCompMesh *cmesh,TPZVec<REAL> &xd) {
                 if(fabs(co[0]-xd[0])<1.e-3 && fabs(co[1]-xd[1])<1.e-3)
                 {
  					//cout << "node id = "<<id <<endl;
- 					//cout << " Coordinates "<< endl;
- 					//cout << " x = "<< co[0] << ",  y = " << co[1] << endl;
- 					//cout << " qsi = "<< qsi << endl;
+ 					cout << " Coordinates "<< endl;
+ 					cout << " x = "<< co[0] << ",  y = " << co[1] << endl;
+ 					cout << " qsi = "<< qsi << endl;
                    //cel = gel->Reference();
                     //TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
 
@@ -984,4 +1031,64 @@ std::vector<T> str_vec ( std::vector<std::string> &vs )
         ret.push_back ( temp );
     }
     return ret;
+}
+
+
+void GravityIncrease ( TPZCompMesh * cmesh )
+{
+
+    REAL FS=0.1,FSmax=1000.,FSmin=0.,tol=0.01;
+    int neq = cmesh->NEquations();
+    int maxcount=10;
+    TPZFMatrix<REAL> displace ( neq,1 ),displace0 ( neq,1 );
+
+    int counterout = 0;
+    REAL factor =1.;
+    REAL gammasolo=20.;
+    REAL gammaagua=0.;
+    LoadingRamp ( cmesh,factor  , gammasolo,  gammaagua);
+    REAL norm = 1000.;
+    REAL tol2 = 1.e-2;
+    int NumIter = 10;
+    bool linesearch = true;
+    bool checkconv = false;
+
+    do {
+
+        std::cout << "FS = " << FS  <<" | Load step = " << counterout << " | Rhs norm = " << norm  << std::endl;
+        LoadingRamp ( cmesh,FS  , gammasolo,  gammaagua);
+		//SetSuportPressure(cmesh,FS);
+
+        TPZElastoPlasticAnalysis  * anal = CreateAnalysis ( cmesh );
+        chrono::steady_clock sc;
+        auto start = sc.now();
+        int iters;
+        bool conv = anal->IterativeProcess ( cout, tol2, NumIter,linesearch,checkconv,iters);
+		//bool conv =anal->IterativeProcess(cout, tol2, NumIter,linesearch,checkconv);
+        auto end = sc.now();
+        auto time_span = static_cast<chrono::duration<double>> ( end - start );
+        cout << "| total time in iterative process =  " << time_span.count()<< std::endl;
+        //anal->IterativeProcess ( outnewton, tol2, NumIter);
+
+        norm = Norm ( anal->Rhs() );
+
+        if ( conv==false) {
+            cmesh->LoadSolution(displace0);
+            //cmesh->Solution().Zero();
+            FSmax = FS;
+            FS = ( FSmin + FSmax ) / 2.;
+
+        } else {
+            // uy+=findnodalsol(cmesh);
+            displace0 = anal->Solution();
+            FSmin = FS;
+            anal->AcceptSolution();
+            FS = 1. / ( ( 1. / FSmin + 1. / FSmax ) / 2. );
+        }
+        // cout << "|asdadadasd =  " << std::endl;
+        counterout++;
+
+    }  while ( (( FSmax - FSmin ) / FS > tol && counterout<maxcount) );
+    TPZElastoPlasticAnalysis  * anal = CreateAnalysis ( cmesh );
+    anal->AcceptSolution();
 }
