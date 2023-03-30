@@ -35,6 +35,8 @@
 
 #include "pzelasticmem.h"
 
+#include <random>
+
 TPZGeoMesh * CreateGMeshQuadrado(int ref);
 
 TPZCompMesh * CreateCompMeshElastMatWithMem(TPZGeoMesh * gmesh,int porder);
@@ -47,23 +49,46 @@ void  CreatePostProcessingMesh ( TPZPostProcAnalysis * PostProcess,TPZCompMesh *
 
 void PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames );
 
+void SetRandomField(TPZCompMesh * rcmesh,TPZCompMesh * cmesh,int isol);
+
+TPZCompMesh * ComputeField(TPZGeoMesh *gmesh,int porder);
+
+TPZFMatrix<REAL> CreateLogNormalRandomField(TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata);
+
+void PrintMat ( std::string out,TPZFMatrix<REAL> mat );
+
+void SolveElastic(TPZCompMesh * rcmesh);
+
+
 int main()
 {
 
-    //TPZElasticityMaterialWithMem<REAL> * mat = new TPZElasticityMaterialWithMem< REAL >();
-
-    int ref=2;
+    int ref=3;
     int porder=1;
-
-
     TPZGeoMesh *gmesh = CreateGMeshQuadrado(ref);
+
+    TPZCompMesh * cmeshfield =  ComputeField(gmesh,porder);
+
+    SolveElastic(cmeshfield);
+
+
+    return 0;
+}
+
+void SolveElastic(TPZCompMesh * rcmesh)
+{
+
+    TPZGeoMesh *gmesh = rcmesh->Reference();
+
+    int porder = rcmesh->GetDefaultOrder();
 
     TPZCompMesh * cmesh = CreateCompMeshElastMatWithMem(gmesh,porder);
 
+    SetRandomField(rcmesh,cmesh,0);
+
     TPZAnalysis *analysis =  CreateAnalysis(cmesh);
-//
      analysis->Run();
-     analysis->Solution().Print(cout);
+     //analysis->Solution().Print(cout);
 
      TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
      CreatePostProcessingMesh ( postprocdeter, cmesh );
@@ -78,41 +103,171 @@ int main()
     postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
 
     postprocdeter->PostProcess ( 0 );
-/*
-    TPZVec<std::string> scalarVars ( 3 ),vectorVars ( 1 );
-    vectorVars[0] = "Displacement";
-    scalarVars[0] = "SigmaX";
-    scalarVars[1] = "SigmaY";
-    scalarVars[2] = "TauXY";
-
-    analysis->DefineGraphMesh ( 2,scalarVars,vectorVars,vtk);
-    analysis->PostProcess ( 0 );*/
-
-
-//     int ref=2;
-//     int porder=1;
-//
-//
-//     TPZGeoMesh *gmesh = CreateGMeshQuadrado(ref);
-//
-//     TPZCompMesh * cmesh = CreateCompMeshKL(gmesh,porder);
-//
-//     KLAnalysis * klanal = new KLAnalysis ( cmesh );
-//
-//     KLMaterial *mat = dynamic_cast<KLMaterial*> (cmesh->MaterialVec()[1]);
-//
-//     klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
-//
-//     klanal->Solve();
-//
-//     cmesh->LoadSolution(klanal->Solution());
-//
-//     string file1 ="solution.vtk";
-//
-//     klanal->Post ( file1,2,0 );
-
-    return 0;
 }
+
+
+TPZCompMesh * ComputeField(TPZGeoMesh *gmesh,int porder)
+{
+
+    TPZCompMesh * cmesh = CreateCompMeshKL(gmesh,porder);
+
+    KLAnalysis * klanal = new KLAnalysis ( cmesh );
+
+    KLMaterial *mat = dynamic_cast<KLMaterial*> (cmesh->MaterialVec()[1]);
+
+    klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
+
+    klanal->Solve();
+
+
+
+    TPZFMatrix<REAL> eigenfunctions = klanal->Solution();
+    REAL mean=1.;
+    REAL cov=0.2;
+    int samples=10;
+    string outdata = "young.txt";
+
+    TPZFMatrix<REAL> field = CreateLogNormalRandomField(eigenfunctions, mean, cov, samples, outdata);
+
+    cmesh->LoadSolution(field);
+
+    string file1 ="young.vtk";
+
+    klanal->Post ( file1,2,0 );
+
+    return cmesh;
+}
+
+TPZFMatrix<REAL> CreateLogNormalRandomField(TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata)
+{
+    TPZFMatrix<REAL>  PHIt;
+
+     PHI.Transpose ( &PHIt );
+
+     int M = PHI.Cols();
+
+     cout << "M = " << M <<endl;
+
+     std::normal_distribution<double> distribution ( 0., 1. );
+
+    TPZFMatrix<REAL>  THETA ( M, samples, 0. );
+    for ( int isample = 0; isample < samples; isample++ ) {
+        for ( int irdvar = 0; irdvar < M; irdvar++ ) {
+            std::random_device rd{};
+            std::mt19937 generator{ rd() };
+            REAL xic = distribution ( generator );
+            REAL xiphi = distribution ( generator );
+            THETA(irdvar,isample) = xic;
+        }
+    }
+
+
+      TPZFMatrix<REAL>  hhat;
+
+      PHI.Multiply( THETA, hhat );
+
+    REAL sdev = cov * mean;
+    REAL xi = sqrt ( log ( 1 + pow ( ( sdev / mean ),2 ) ) );
+    REAL lambda = log ( mean ) - xi * xi / 2.;
+    for ( int i = 0; i < hhat.Rows(); i++ ) {
+        for ( int j = 0; j < hhat.Cols(); j++ ) {
+			REAL temp =  hhat(i,j);
+            hhat(i,j) = exp ( lambda + xi * temp );
+        }
+    }
+
+    //string out="testefield.txt";
+
+    PrintMat ( outdata,hhat);
+
+     return hhat;
+}
+
+
+void SetRandomField(TPZCompMesh * rcmesh,TPZCompMesh * cmesh,int isol)
+{
+    int nels = cmesh->NElements();
+    int nels0 = rcmesh->NElements();
+    int nelsgmesh = rcmesh->Reference()->NElements();
+
+    if ( nels!=nels0 ) {
+        cout << "nels "<< nels << " | nels0 = "<< nels0 << " nelsgmesh = " << nelsgmesh <<endl;
+        //DebugStop();
+    }
+
+    TPZMatWithMem<TPZElasticMem> *pMatWithMem2 = dynamic_cast<TPZMatWithMem<TPZElasticMem> *> ( cmesh->MaterialVec() [1] );
+    TPZAdmChunkVector<TPZElasticMem>  &mem = pMatWithMem2->GetMemory();
+
+    if ( pMatWithMem2 ) {
+        pMatWithMem2->SetUpdateMem ( true );
+    }
+
+    int globpt=0;
+    for ( int iel=0; iel<nels0; iel++ ) {
+
+        TPZCompEl *celplastic = cmesh->Element ( iel );
+        TPZInterpolationSpace *intelplastic = dynamic_cast<TPZInterpolationSpace *> ( celplastic );
+
+        if(celplastic->Material()->Id()<0)
+        {
+            cout <<"Acessando elemento de contorno na malha plástica"<<endl;
+            cout <<"Significa transferir a slolução de forma errada. Elementos não correspontem, até porque a malha RF não tem elementos de contorno."<<endl;
+            DebugStop();
+        }
+
+        TPZCompEl *celrandom1 = rcmesh->Element ( iel );
+        TPZInterpolationSpace *intelrandom1 = dynamic_cast<TPZInterpolationSpace *> ( celrandom1 );
+
+        const TPZIntPoints &intpoints = intelplastic->GetIntegrationRule();
+        const TPZIntPoints &intpoints1 = intelrandom1->GetIntegrationRule();
+
+        TPZManVector<REAL,3> point ( 3,0. );
+        TPZManVector<REAL,3> point1 ( 3,0. );
+
+        TPZMaterialData dataplastic,datarandom1,datarandom2;
+
+        datarandom1.fNeedsSol = true;
+        datarandom2.fNeedsSol = true;
+
+        intelplastic->InitMaterialData ( dataplastic );
+        intelrandom1->InitMaterialData ( datarandom1 );
+
+        REAL weight=0;
+        int nint = intpoints.NPoints();
+
+        for ( long ip =0; ip<nint; ip++ ) {
+
+            intpoints.Point ( ip, point, weight );
+            //intpoints1.Point ( ip, point1, weight );
+
+            dataplastic.intLocPtIndex = ip;
+            datarandom1.intLocPtIndex=ip;
+
+            intelplastic->ComputeRequiredData ( dataplastic, point );
+            intelrandom1->ComputeRequiredData ( datarandom1, point );
+
+            int indexplastic = dataplastic.intGlobPtIndex;
+
+            int indexrandom = datarandom1.intGlobPtIndex;
+
+            if(indexplastic!=indexrandom)
+            {
+//                 std::cout << "index das malhas sao diferentes"<<std::endl;
+//                 std::cout << "indexplastic = "<< indexplastic << "indexrandom = "<< indexrandom  << std::endl;
+            }
+
+            mem[indexplastic].fE = datarandom1.sol[isol][0];
+
+            //dataplastic.intGlobPtIndex = globpt;
+            //globpt++;
+
+        }
+    }
+    pMatWithMem2->SetUpdateMem ( false );
+
+    cmesh->Solution().Zero();
+}
+
 
 TPZGeoMesh * CreateGMeshQuadrado(int ref)
 {
@@ -191,10 +346,10 @@ TPZCompMesh * CreateCompMeshElastMatWithMem(TPZGeoMesh * gmesh,int porder)
     TPZCompMesh * cmesh = new TPZCompMesh ( gmesh );
 
     int id=1;
-    REAL E=8000.;
+    REAL E=1.;
     REAL nu=0.;
     REAL fx=0.;
-    REAL fy=-1.;
+    REAL fy=0.;
     int planestress=1;
 
     TPZElasticMem mem;
@@ -215,7 +370,13 @@ TPZCompMesh * CreateCompMeshElastMatWithMem(TPZGeoMesh * gmesh,int porder)
     val2(1,0)=1;
     auto * bc_bottom = mat->CreateBC ( mat, -1,3, val1, val2 );//bottom
 
+    val2(0,0)=0;
+    val2(1,0)=-1;
+    auto * bc_load = mat->CreateBC ( mat, -3,1, val1, val2 );//bottom
+
     cmesh->InsertMaterialObject ( bc_bottom );
+
+    cmesh->InsertMaterialObject ( bc_load );
 
     cmesh->SetDefaultOrder ( porder );
     cmesh->SetDimModel ( dim );
@@ -280,6 +441,7 @@ void  CreatePostProcessingMesh ( TPZPostProcAnalysis * PostProcess,TPZCompMesh *
 void PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames )
 {
     scalNames.Push ( "SigmaX" );
+    scalNames.Push ( "youngmodulus" );
     vecNames.Push ( "Displacement" );
 
 }
@@ -292,11 +454,11 @@ TPZCompMesh * CreateCompMeshKL(TPZGeoMesh * gmesh,int porder)
     TPZCompMesh * cmesh = new TPZCompMesh ( gmesh );
 
     REAL lx=1.;
-    REAL ly =2.;
+    REAL ly =1.;
     REAL lz=1.;
 
     int type=3;
-    int expansionorder=10;
+    int expansionorder=4;
 
     KLMaterial * klmat = new KLMaterial ( id,lx,ly,lz,dim,type,expansionorder );
 
@@ -307,5 +469,82 @@ TPZCompMesh * CreateCompMeshKL(TPZGeoMesh * gmesh,int porder)
     cmesh->AutoBuild();
     return cmesh;
 
+
+}
+
+void PrintMat ( std::string out,TPZFMatrix<REAL> mat )
+{
+    std::ofstream print ( out );
+    int row=mat.Rows();
+    int cols = mat.Cols();
+
+    for ( int i=0; i<row; i++ ) {
+        for ( int j=0; j<cols; j++ ) {
+            print << mat ( i,j ) << " ";
+        }
+        print<< std::endl;
+    }
+
+
+}
+REAL findnodalsol(TPZCompMesh *cmesh) {
+
+    TPZGeoMesh * gmesh =  cmesh->Reference();
+    int dim = gmesh->Dimension();
+    TPZVec<REAL> xd(dim,0.);
+    TPZVec<REAL> mpt(dim,0.);
+
+    xd[0] =-0.5;
+    xd[1] = 0.5;
+    int id;
+    int nels = gmesh->NElements();
+    for(int iel=0; iel<nels; iel++) {
+
+
+        TPZVec<REAL> qsi(dim,0.);
+        TPZGeoEl * gel = gmesh->ElementVec()[iel];
+
+        TPZCompEl * cel = gel->Reference();
+
+        if(gel->MaterialId()<0)continue;
+        bool check = gel->ComputeXInverse(xd,qsi,1.e-5);
+
+        if(check==true)
+        {
+
+
+// 	   		cout << "elemento encontrado"<<endl;
+// 			cout << "index do elemento = " <<gel->Index() <<endl;
+            int nnodes=gel->NNodes();
+            for(int inode=0; inode<nnodes; inode++)
+            {
+                TPZVec<REAL> co(2);
+                TPZGeoNode* node = gel->NodePtr(inode);
+                node->GetCoordinates(co);
+                id = node->Id();
+
+                if(fabs(co[0]-xd[0])<1.e-3 && fabs(co[1]-xd[1])<1.e-3)
+                {
+ 					cout << "node id = "<<id <<endl;
+ 					cout << " Coordinates "<< endl;
+ 					cout << " x = "<< co[0] << ",  y = " << co[1] << endl;
+ 					cout << " qsi = "<< qsi << endl;
+                    TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
+
+                    TPZMaterialData data;
+
+                    data.fNeedsSol = true;
+
+                    intel->InitMaterialData ( data );
+
+                    intel->ComputeRequiredData ( data, qsi );
+
+                    return data.sol[0][1];
+                }
+            }
+
+
+        }
+    }
 
 }

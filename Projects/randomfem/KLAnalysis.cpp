@@ -135,10 +135,10 @@ void KLAnalysis::Solve()
     bool print =true;
     if ( print==true )
     {
-        out << "Eigenvalues "<<endl;
-        out << val << endl;
-        out << "Eigenvectors "<<endl;
-        out << vec << endl;
+        cout << "Eigenvalues "<<endl;
+        cout << val << endl;
+        cout << "Eigenvectors "<<endl;
+        cout << vec << endl;
         // std::cout << " A "<<endl;
         // std::cout << eigenInvBC <<std::endl;
         //std::cout << " A- V * D * V^(-1) = " << "\n" << (vec * val.asDiagonal() * vec.inverse()) << endl;

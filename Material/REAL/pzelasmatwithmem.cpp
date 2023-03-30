@@ -54,6 +54,15 @@ void TPZElasticityMaterialWithMem<TMEM>::Print(std::ostream &out) {
 }
 
 template <class TMEM>
+void TPZElasticityMaterialWithMem<TMEM>::UpdateMem(TPZMaterialData &data, REAL E, REAL nu)
+{
+    int index = data.intGlobPtIndex;
+	this->MemItem(index).fE=E;
+    this->MemItem(index).fnu=nu;
+
+}
+
+template <class TMEM>
 void TPZElasticityMaterialWithMem<TMEM>::Contribute(TPZMaterialData &data, REAL weight,TPZFMatrix<STATE> &ek,TPZFMatrix<STATE> &ef)
 {
 
@@ -189,8 +198,10 @@ void TPZElasticityMaterialWithMem<TMEM>::ContributeBC(TPZMaterialData &data,REAL
 // 	v2[1] = bc.Val2()(1,0);
     int nstate = NStateVariables();
 
+    REAL v22[2];
     TPZFMatrix<STATE> &v1 = bc.Val1();
-
+	v22[0] = bc.Val2()(0,0);
+	v22[1] = bc.Val2()(1,0);
 
     switch (bc.Type()) {
         case 0 :			// Dirichlet condition
@@ -215,15 +226,19 @@ void TPZElasticityMaterialWithMem<TMEM>::ContributeBC(TPZMaterialData &data,REAL
 
         case 1 :		// Neumann condition
         {
-            for (in = 0; in < phr; in++)
-            {
-                for (int il = 0; il <0; il++)
-                {
-                    TPZFNMatrix<2,STATE> v2 = bc.Val2(il);
-                    ef(2*in,il) += v2(0,0) * phi(in,0) * weight;        // force in x direction
-                    ef(2*in+1,il) +=  v2(1,0) * phi(in,0) * weight;      // force in y direction
-                }
-            }
+            for(in = 0 ; in < phi.Rows(); in++) {
+				ef(nstate*in+0,0) += v22[0] * phi(in,0) * weight;
+				ef(nstate*in+1,0) += v22[1] * phi(in,0) * weight;
+			}
+//             for (in = 0; in < phr; in++)
+//             {
+//                 for (int il = 0; il <0; il++)
+//                 {
+//                     TPZFNMatrix<2,STATE> v2 = bc.Val2(il);
+//                     ef(2*in,il) += v2(0,0) * phi(in,0) * weight;        // force in x direction
+//                     ef(2*in+1,il) +=  v2(1,0) * phi(in,0) * weight;      // force in y direction
+//                 }
+//             }
         }
             break;
 
@@ -342,6 +357,7 @@ template <class TMEM>
 int TPZElasticityMaterialWithMem<TMEM>::VariableIndex(const std::string &name){
 
 
+    if(!strcmp("youngmodulus",name.c_str()))     return 28;
 	if(!strcmp("displacement",name.c_str()))     return 9;
 	if(!strcmp("Displacement",name.c_str()))     return 9;
 	if(!strcmp("DisplacementMem",name.c_str()))     return 9;
@@ -419,6 +435,8 @@ int TPZElasticityMaterialWithMem<TMEM>::NSolutionVariables(int var){
         case 26:
         case 27:
             return 3;
+        case 28:
+            return 1;
 		default:
 			return TPZMaterial::NSolutionVariables(var);
 	}
@@ -650,6 +668,9 @@ void TPZElasticityMaterialWithMem<TMEM>::Solution(TPZMaterialData &data, int var
             Solout[0] = 0.;
             Solout[1] = 0.;
             Solout[2] = 0.;
+            break;
+        case 28:
+            Solout[0] = E;
             break;
 		default:
 			TPZMaterial::Solution(Sol,DSol,axes,var,Solout);

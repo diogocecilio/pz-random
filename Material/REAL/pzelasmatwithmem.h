@@ -24,6 +24,7 @@ public:
 
     virtual void FillBoundaryConditionDataRequirement(int type, TPZMaterialData &data);
 
+	void UpdateMem(TPZMaterialData &data, REAL E, REAL nu);
 
 	int Dimension() const { return 2;}
 
