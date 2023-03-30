@@ -2,5 +2,5 @@
 
 add_subdirectory(randomfem)
 
-
+add_subdirectory(randomfemplasticity)
 
