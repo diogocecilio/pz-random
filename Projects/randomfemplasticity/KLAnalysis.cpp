@@ -7,7 +7,7 @@
 #include "pzseqsolver.h"
 #include "pzbdstrmatrix.h"
 #include "TPZSkylineNSymStructMatrix.h"
-
+#include <Eigen/Eigenvalues>
 
 #include <fstream>
 #include <stdio.h>
@@ -103,14 +103,19 @@ void KLAnalysis::Solve()
 
     MatrixXd val,vec;
 
+    //GeneralizedEigenSolver<MatrixXd> ces;
+
+    //EigenSolver<MatrixXd> ces;
     ComplexEigenSolver<MatrixXd> ces;
+
     cout << " Computing Eigensystem  " << std::endl;
     start = sc.now();
     ces.compute ( eigenInvBC );
+    //ces.compute(eigenB, eigenC);
     end = sc.now();
     time_span = static_cast<chrono::duration<double>> ( end - start );
    cout << "| total time taken to compute the Eigensystem =  " << time_span.count()<< std::endl;
-	
+	ces.info();
 	
 	auto endfull = fulltime.now();
 	time_span = static_cast<chrono::duration<double>> ( endfull - startfull );

@@ -808,7 +808,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out,REAL tol,int n
             //cout <<  "aaaaaaaaaa" << endl;
             auto end = sc.now();
             auto time_span = static_cast<chrono::duration<double>> ( end - start );
-            cout << "| total time taken to solve PZ=  " << time_span.count()<< std::endl;
+            //cout << "| total time taken to solve PZ=  " << time_span.count()<< std::endl;
         }
 
  
@@ -844,6 +844,10 @@ bool TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out,REAL tol,int n
         //if( normDeltaSol>100 || iter >=numiter  || ((normDeltaSol - error2) > 1.e-9 && (NormResLambda - error) > 1.e-9) ) {
        // if((normu>100 || iter >=numiter  ||(normu - error2) > 1.e-3)&& iter>5) {
         // if((normu>1 && iter>5 && (normu - error2) > 1.e-3)|| iter >=numiter) {
+//                 if(  ( iter >=numiter || ( iter>2 && normu >1 ) ) ||(normu - error2) > 1.e-3 || fabs((normf - error)) > 1.e-9 ) {
+//             cout << "\nDivergent Method\n";
+//             return false;
+//         }
         if(  ( iter >=numiter || ( iter>2 && normu >1 ) ) ) {
             cout << "\nDivergent Method\n";
             return false;
@@ -902,7 +906,7 @@ void TPZElastoPlasticAnalysis::IterativeProcess(std::ostream &out,REAL tol,int n
         b =error2 > tol*1.e-3;
         c= error > tol;
 
-        if( (normDeltaSol - error2) > 1.e-9 && (NormResLambda - error) > 1.e-9 &&  normDeltaSol>1.) {
+        if( (normDeltaSol - error2) > 1.e-9 && (NormResLambda - error) > 1.e-9 &&  normDeltaSol>0.1) {
             out << "\nDivergent Method\n";
             return;
         }
@@ -1323,7 +1327,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength(REAL tol,int numiter,RE
 
         REAL residualrhs=10.;
         REAL normrhsn=10.e12;
-
+        REAL normdu=10.;
         REAL diffnorm=0.;
 
         do
@@ -1378,7 +1382,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength(REAL tol,int numiter,RE
 
             displace+=dww;
 
-            REAL normdu=Norm(dww) ;
+             normdu=Norm(dww) ;
 
             cout << " counter  = " << counter+1 <<" normrhs = " <<residualrhs << " normdu = " << normdu << " lambda = "<< lambda << " dlamb = "<< dlamb << " l = " << l << endl;
 
@@ -1393,7 +1397,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength(REAL tol,int numiter,RE
 
             LoadSolution(displace);
 
-        }while( counter<numiter2 && residualrhs>tol2 );
+        }while( counter<numiter2 && normdu>tol2 );
 
         if(conv==false)
         {

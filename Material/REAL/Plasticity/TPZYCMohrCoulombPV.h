@@ -105,7 +105,7 @@ public:
         fc =   state.fmatprop[0];
         fPhi = state.fmatprop[1];
         fPsi = state.fmatprop[1];
-	//	std::cout << "fc = "<< fc <<endl;
+		//std::cout << "fc = "<< fc <<endl;
     }
 
     /**
