@@ -1,10 +1,13 @@
+[Buildset]
+BuildItems=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x01\x00\x00\x00\x0b\x00\x00\x00\x00\x01\x00\x00\x00\x12\x00p\x00z\x00-\x00r\x00a\x00n\x00d\x00o\x00m)
+
 [CMake]
 Build Directory Count=2
-Current Build Directory Index-Host System=1
+Current Build Directory Index-Host System=0
 
 [CMake][CMake Build Directory 0]
-Build Directory Path=/home/diogo/projects/pz-random-build-debug
-Build Type=Debug
+Build Directory Path=/home/diogo/projects/pz-random-build-release
+Build Type=Release
 CMake Binary=/usr/bin/cmake
 CMake Executable=/usr/bin/cmake
 Environment Profile=
@@ -13,8 +16,8 @@ Install Directory=/usr/local
 Runtime=Host System
 
 [CMake][CMake Build Directory 1]
-Build Directory Path=/home/diogo/projects/pz-random-build-release
-Build Type=Release
+Build Directory Path=/home/diogo/projects/pz-random-build-debug
+Build Type=Debug
 CMake Binary=/usr/bin/cmake
 CMake Executable=/usr/bin/cmake
 Environment Profile=
@@ -28,7 +31,7 @@ Launch Configurations=Launch Configuration 0,Launch Configuration 1
 [Launch][Launch Configuration 0]
 Configured Launch Modes=execute
 Configured Launchers=nativeAppLauncher
-Name=debug
+Name=release
 Type=Native Application
 
 [Launch][Launch Configuration 0][Data]
@@ -36,7 +39,7 @@ Arguments=
 Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
 Dependency Action=Nothing
 EnvironmentGroup=
-Executable=file:///home/diogo/projects/pz-random-build-debug/Projects/randomfemplasticity/randomfemplasticity
+Executable=file:///home/diogo/projects/pz-random-build-release/Projects/randomfemplasticityv2/randomfemplasticityv2
 External Terminal=konsole --noclose --workdir %workdir -e %exe
 Kill Before Executing Again=4194304
 Project Target=pz-random,Projects,randomfem,randomfem
@@ -47,7 +50,7 @@ isExecutable=true
 [Launch][Launch Configuration 1]
 Configured Launch Modes=execute
 Configured Launchers=nativeAppLauncher
-Name=release
+Name=debug
 Type=Native Application
 
 [Launch][Launch Configuration 1][Data]
@@ -55,7 +58,7 @@ Arguments=
 Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
 Dependency Action=Nothing
 EnvironmentGroup=
-Executable=file:///home/diogo/projects/pz-random-build-release/Projects/randomfemplasticity/randomfemplasticity
+Executable=file:///home/diogo/projects/pz-random-build-debug/Projects/randomfemplasticityv2/randomfemplasticityv2
 External Terminal=konsole --noclose --workdir %workdir -e %exe
 Kill Before Executing Again=4194304
 Project Target=pz-random,Projects,randomfem,randomfem

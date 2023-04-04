@@ -1902,10 +1902,9 @@ void TPZInterpolatedElement::ComputeSolution(TPZVec<REAL> &qsi, TPZFMatrix<REAL>
     const int ncon = this->NConnects();
     TPZFMatrix<STATE> &MeshSol = Mesh()->Solution();
 
-// 	if(MeshSol(0,0)>0.001)
-//  {
-// 	MeshSol.Print(std::cout); 
-// }
+
+	//MeshSol.Print(std::cout);
+
 	 
 	
     long numbersol = MeshSol.Cols();
@@ -1944,7 +1943,7 @@ void TPZInterpolatedElement::ComputeSolution(TPZVec<REAL> &qsi, TPZFMatrix<REAL>
 // 	 cout << " is  = "<<is  << " ivnumdof "<< iv%numdof<< endl;
 // 	 cout << "  pos+jn " << pos+jn << endl;
 //  	 cout << " phi  " << (STATE)phi(iv/numdof,0) << endl;
-//  	cout << " MeshSol "<<MeshSol(pos+jn,is) << endl; 
+//  	cout << " MeshSol "<<MeshSol(pos+jn,is) << endl;
 //  	cout << " sol "<<sol[is][iv%numdof] << endl;
 // 			sol.Print(std::cout); 
 
