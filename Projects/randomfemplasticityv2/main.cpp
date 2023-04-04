@@ -99,9 +99,9 @@ int main()
 {
 
 
-//      SolveDeterministic();
-// //
-//      return 0;
+      SolveDeterministic();
+//
+      return 0;
 
     MonteCarlo();
 
@@ -111,8 +111,8 @@ int main()
 void SolveDeterministic()
 {
     int ref=1;
-    int porder=1;
-    string file ="/home/diogo/projects/pz-random/data/mesh-tri.msh";
+    int porder=2;
+    string file ="/home/diogo/projects/pz-random/data/tri657.msh";
     TPZGeoMesh *gmesh = CreateGMeshRef(ref,file);
 
 
@@ -126,15 +126,22 @@ void SolveDeterministic()
 
     TPZElastoPlasticAnalysis *analysis =  CreateAnalysis(cmesh);
 
-   GravityIncrease ( cmesh );
+ //  GravityIncrease ( cmesh );
 
-//         REAL tolfs =0.01;
-//     int numiterfs =40;
-//     REAL tolres = 1.e-6;
-//     int numiterres =20;
-//     REAL l =0.1;
-//     REAL lambda0=1.;
-//    REAL fs = analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0);
+    REAL tolfs =0.01;
+    int numiterfs =20;
+    REAL tolres = 1.e-6;
+    int numiterres =20;
+    REAL l =0.2;
+    REAL lambda0=0.1;
+
+   bool converge;
+REAL fs = analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0,converge);
+   if(converge==false)
+   {
+       cout << "calling gravity increase"<<endl;
+       REAL fs = GravityIncrease ( cmesh );
+   }
 
      TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
      CreatePostProcessingMesh ( postprocdeter, cmesh );
@@ -156,7 +163,7 @@ void MonteCarlo()
     int ref=2;
     int porder=1;
     //string file ="/home/diogo/projects/pz-random/data/mesh.msh";
-    string file ="/home/diogo/projects/pz-random/data/mesh-tri3.msh";
+    string file ="/home/diogo/projects/pz-random/data/tri657.msh";
     TPZGeoMesh *gmesh1 = CreateGMesh(ref,file);
       TPZGeoMesh *gmesh2 = CreateGMesh(ref,file);
 
@@ -233,23 +240,21 @@ REAL SolveElastoplastic(TPZManVector<TPZCompMesh*,2>  vecmesh, int imc,string vt
 
     TPZElastoPlasticAnalysis *analysis =  CreateAnalysis(cmesh);
 
-     REAL fs = GravityIncrease ( cmesh );
+    REAL tolfs =0.01;
+    int numiterfs =20;
+    REAL tolres = 1.e-6;
+    int numiterres =20;
+    REAL l =0.01;
+    REAL lambda0=0.8;
+    bool converge;
 
+   REAL fs = analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0,converge);
+   if(converge==false)
+   {
+       cout << "calling gravity increase"<<endl;
+       REAL fs = GravityIncrease ( cmesh );
+   }
 
-//     REAL tolfs =0.1;
-//     int numiterfs =40;
-//     REAL tolres = 1.e-3;
-//     int numiterres =20;
-//     REAL l =0.1;
-//     REAL lambda0=1.;
-//    REAL fs = analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0);
-
-//     TPZVec<REAL> xd(3);
-//     xd[0]=34.99;
-//     xd[1]= 39.99;
-//     REAL sol = fabs(FindSol(cmesh,xd));
-
-//    std::cout << "top displacement = " << sol << std::endl;
 
      TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
      CreatePostProcessingMesh ( postprocdeter, cmesh );
@@ -551,8 +556,13 @@ TPZGeoMesh * CreateGMeshRef(int ref,string file)
         }
 
         TPZVec<long> TopolPoint(1);
-        TopolPoint[0]=90;
+        TopolPoint[0]=249;
         new TPZGeoElRefPattern< pzgeom::TPZGeoPoint> ( sz+1, TopolPoint, 2, *gmesh );
+
+
+//         TopoLine[0]=455;
+//         TopoLine[1]=494;
+//         new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( sz+2, TopoLine, 3, *gmesh );
 
     gmesh->BuildConnectivity();
     cout << "c" << endl;
@@ -567,7 +577,8 @@ TPZGeoMesh * CreateGMeshRef(int ref,string file)
 
         set<int> SETmatRefDir11;
         SETmatRefDir11.insert(2);
-        for(int j = 0; j < 6; j++)
+       // SETmatRefDir11.insert(3);
+        for(int j = 0; j < 3; j++)
 		{
 			long nel = gmesh->NElements();
 			for (long iref = 0; iref < nel; iref++)

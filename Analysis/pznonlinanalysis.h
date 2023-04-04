@@ -34,10 +34,12 @@ public:
 	/** It has the possibility of line search with parameter linesearch = true. */
 	virtual void IterativeProcess(std::ostream &out,REAL tol,int numiter, bool linesearch = false, bool checkconv = false);
 	
-	virtual REAL IterativeProcessArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0){
+	virtual REAL IterativeProcessArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge){
 		std::cout<<"Not implemented here" <<std::endl;
 		DebugStop();
 	}
+
+
 	virtual void IterativeProcessArcLength(){
 
 		std::cout<<"Not implemented here" <<std::endl;

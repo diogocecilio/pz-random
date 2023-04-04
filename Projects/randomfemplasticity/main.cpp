@@ -148,15 +148,16 @@ void SolveDeterministic()
 
     TPZElastoPlasticAnalysis *analysis =  CreateAnalysis(cmesh);
 
-   GravityIncrease ( cmesh );
+//   GravityIncrease ( cmesh );
 
-//         REAL tolfs =0.01;
-//     int numiterfs =40;
-//     REAL tolres = 1.e-6;
-//     int numiterres =20;
-//     REAL l =0.1;
-//     REAL lambda0=1.;
-//    REAL fs = analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0);
+        REAL tolfs =0.01;
+    int numiterfs =40;
+    REAL tolres = 1.e-6;
+    int numiterres =20;
+    REAL l =0.1;
+    REAL lambda0=1.;
+    bool converge;
+   REAL fs = analysis->IterativeProcessArcLength(tolfs,numiterfs,tolres,numiterres,l,lambda0,converge);
 
     TPZVec<REAL> xd(3);
     xd[0]=35.;
