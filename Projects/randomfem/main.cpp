@@ -173,13 +173,15 @@ TPZCompMesh * ComputeField(TPZGeoMesh *gmesh,int porder)
 
 TPZFMatrix<REAL> CreateLogNormalRandomField(TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata)
 {
-    TPZFMatrix<REAL>  PHIt;
+    //TPZFMatrix<REAL>  PHIt;
 
-     PHI.Transpose ( &PHIt );
+    // PHI.Transpose ( &PHIt );
 
      int M = PHI.Cols();
 
      cout << "M = " << M <<endl;
+     cout << "PHI.Cols(); = " << PHI.Cols() <<endl;
+     cout << "PHI.Rows(); = " << PHI.Rows() <<endl;
 
      std::normal_distribution<double> distribution ( 0., 1. );
 

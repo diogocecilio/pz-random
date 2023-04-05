@@ -82,6 +82,9 @@ void KLAnalysis::Solve()
 
     fStrMatrix->AssembleC ( C );
 
+    //int nrows = C.Rows();
+    //int ncols = C.Rows();
+
     auto end = sc.now();
     auto time_span = static_cast<chrono::duration<double>> ( end - start );
     cout << "| total time taken to assemble C =  " << time_span.count()<< std::endl;
@@ -174,7 +177,7 @@ void KLAnalysis::Solve()
     time_span = static_cast<chrono::duration<double>> ( end - start );
     cout << "| total time taken to integrate the solution over the domain =  " << time_span.count()<< std::endl;
 
-	cout << intphisqr << endl;
+	//cout << intphisqr << endl;
     for ( int icol=0; icol< M; icol++ )
     {
         for(int irow=0; irow<nrows; irow++)
@@ -183,20 +186,21 @@ void KLAnalysis::Solve()
         }
     }
     LoadSolution(vecpz);
-	
-    REAL err = 0.;
-    REAL err2=0.;
+    REAL totalarea = ComputeTotalArea();
+    REAL sumeigenvalues = 0.;
+    REAL sumeigenvaluestimessqrvec=0.;
     for ( int i = 0; i < val.size(); i++ ) {
-       // err += fabs ( val(i)*intphisqr(i) ) ;
-		err += fabs ( val(i)* intphisqr(i));
-        err2 += fabs ( val(i) ) ;
+        sumeigenvalues +=  val(i)  ;
+        sumeigenvaluestimessqrvec += val(i)* intphisqr(i);
     }
 
-     REAL totalarea = ComputeTotalArea();
+
      cout << "total area = "<<totalarea << std::endl;
+     cout << "sumeigenvalues= "<<sumeigenvalues << std::endl;
+     cout << "sumeigenvaluestimessqrvec= "<<sumeigenvaluestimessqrvec << std::endl;
      //std::cout << " err / (fsig * fsig) = " <<err / (fsig * fsig) << std::endl;
-     cout << "mean error 1 = " <<1. - 1./totalarea *   err2 << std::endl;
-     cout << "mean error 2 = " <<1. - 1./totalarea *   err << std::endl;
+     cout << "mean error 1 = " <<1. - sumeigenvalues/totalarea  << std::endl;
+     cout << "mean error 2 = " <<1. - sumeigenvaluestimessqrvec/totalarea  << std::endl;
 
     FromEigen(val,fEigenValues);
 

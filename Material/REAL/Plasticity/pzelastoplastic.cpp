@@ -231,6 +231,7 @@ int TPZMatElastoPlastic<T,TMEM>::VariableIndex(const std::string &name)
   if(!strcmp("NSteps",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::ENSteps;
   if(!strcmp("Cohesion",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::ECohes;
   if(!strcmp("FrictionAngle",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::EFric;
+  if(!strcmp("EEigenFunc",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::EEigenFunc;
    if(!strcmp("Flux",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::EFlux;
   if(!strcmp("FluxX",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::EFluxX;
   if(!strcmp("FluxY",			name.c_str()))  return TPZMatElastoPlastic<T,TMEM>::EFluxY;
@@ -341,6 +342,7 @@ int TPZMatElastoPlastic<T,TMEM>::NSolutionVariables(int var)
   if(var == TPZMatElastoPlastic<T,TMEM>::EMatPoisson)		 return 1;
     if(var == TPZMatElastoPlastic<T,TMEM>::ECohes)			 return 1;
   if(var == TPZMatElastoPlastic<T,TMEM>::EFric)		 return 1;
+  if(var == TPZMatElastoPlastic<T,TMEM>::EEigenFunc)		 return 1;
   if(var == TPZMatElastoPlastic<T,TMEM>::EFlux)		 return 3;
   if(var == TPZMatElastoPlastic<T,TMEM>::EFluxX)		 return 1;
   if(var == TPZMatElastoPlastic<T,TMEM>::EFluxY)		 return 1;
@@ -416,10 +418,10 @@ void TPZMatElastoPlastic<T,TMEM>::Solution(TPZMaterialData &data, int var, TPZVe
   
     int sz= TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop.size();
     if ( sz==0 ) {
-        TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop.Resize ( 2 );
+        TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop.Resize ( 3 );
         TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop[0]=0.;
         TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop[1]=0.;
-		//TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop[2]=0.;
+		TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop[2]=0.;
     }
     int sz2= TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fflux.size();
     if ( sz2==0 ) {
@@ -574,6 +576,9 @@ void TPZMatElastoPlastic<T,TMEM>::Solution(TPZMaterialData &data, int var, TPZVe
 	break;
         case EFluxY:
         Solout[0] =TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fflux[1];
+	break;
+        case EEigenFunc:
+        Solout[0] =TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fmatprop[2];
 	break;
         case EPressure:
         Solout[0] =TPZMatWithMem<TMEM>::fMemory[intPt].fPlasticState.fpressure;
