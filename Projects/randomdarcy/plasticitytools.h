@@ -39,18 +39,26 @@ public:
 
     ~PlasticityTools();
 
+
     TPZCompMesh * CreateCompMesh ( TPZGeoMesh * gmesh,int porder );
+
     void LoadingRamp (REAL factor );
+
     TPZElastoPlasticAnalysis * CreateAnalysis ( );
+
     REAL GravityIncrease ( );
+
     REAL Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres, REAL l,REAL lambda0);
 
-
     void PostPlasticity();
+
     void CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess );
+
     void PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames );
 
-    void TransferSolutionFrom ( TPZManVector<TPZCompMesh*,2> vecmesh,int isol );
+    void TransferSolutionFrom ( TPZManVector<TPZCompMesh*,3> vecmesh,int isol );
+
+    void TransferPermeability();
 };
 
 PlasticityTools::PlasticityTools()
@@ -80,7 +88,7 @@ PlasticityTools::~PlasticityTools()
 
 }
 
-void PlasticityTools::TransferSolutionFrom ( TPZManVector<TPZCompMesh*,2> vecmesh,int isol )
+void PlasticityTools::TransferSolutionFrom ( TPZManVector<TPZCompMesh*,3> vecmesh,int isol )
 {
     bool debug=false;
     TPZMatWithMem<TPZElastoPlasticMem> *pMatWithMem2 = dynamic_cast<TPZMatWithMem<TPZElastoPlasticMem> *> ( fcmesh->MaterialVec() [1] );

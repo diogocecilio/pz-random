@@ -29,6 +29,13 @@ public:
     void SolveDarcyProlem();
     void SetFlux ( TPZCompMesh * cmesh );
 
+    void TransferSolutionFrom ( TPZManVector<TPZCompMesh*,3> vecmesh,int isol );
+
+    void PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames );
+
+    void  CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess );
+
+    void PostDarcy();
 
 };
 
@@ -275,5 +282,183 @@ void DarcyTools::SetFlux ( TPZCompMesh * cmesh )
         pMatWithMem2->SetUpdateMem ( false );
 
     }
+
+}
+
+void DarcyTools::TransferSolutionFrom ( TPZManVector<TPZCompMesh*,3> vecmesh,int isol )
+{
+
+    TPZMatWithMem<TPZDarcyMem> *pMatWithMem2 = dynamic_cast<TPZMatWithMem<TPZDarcyMem> *> ( fcmesh->MaterialVec() [1] );
+    int nels =  fcmesh->NElements();
+
+    TPZMaterial *mat3 = vecmesh[2]->FindMaterial ( 1 );
+    if ( !mat3 )
+    {
+        DebugStop();
+    }
+
+    TPZAdmChunkVector<TPZDarcyMem>  &mem = pMatWithMem2->GetMemory();
+    if ( pMatWithMem2 )
+    {
+        pMatWithMem2->SetUpdateMem ( true );
+    }
+    else
+    {
+        DebugStop();
+    }
+
+    for ( int iel=0; iel<nels; iel++ )
+    {
+
+        TPZCompEl *cel = fcmesh->ElementVec() [iel];
+        if ( !cel )
+        {
+            continue;
+        }
+        TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
+        if ( !intel )
+        {
+            continue;
+        }
+        if ( intel->Material() != pMatWithMem2 )
+        {
+            continue;
+        }
+
+        TPZGeoMesh *gmesh3 = vecmesh[2]->Reference();
+
+
+        const TPZIntPoints &intpoints = intel->GetIntegrationRule();
+        int nint = intpoints.NPoints();
+        TPZManVector<REAL,3> point ( 3,0. );
+        TPZMaterialData data3,data;
+        intel->InitMaterialData ( data );
+        data.fNeedsSol = false;
+        data3.fNeedsSol = true;
+
+        long elementid1 = 0;
+        long elementid3 = 0;
+        TPZManVector<REAL,3> qsi ( 2,0. );
+
+        for ( long ip =0; ip<nint; ip++ )
+        {
+            REAL weight;
+            intpoints.Point ( ip, point, weight );
+            data.intLocPtIndex = ip;
+            data3.intLocPtIndex = ip;
+            intel->ComputeRequiredData ( data, point );
+
+            TPZGeoEl *gel3 = gmesh3->FindElement ( data.x, qsi, elementid1,2 );
+            if ( !gel3 )
+            {
+                DebugStop();
+            }
+            TPZCompEl *cel3 = gel3->Reference();
+            if ( !cel3 )
+            {
+                DebugStop();
+            }
+
+            TPZInterpolationSpace *intel3 = dynamic_cast<TPZInterpolationSpace *> ( cel3 );
+            if ( !intel3 )
+            {
+                DebugStop();
+            }
+
+
+            data3.fNeedsSol = true;
+            intel3->InitMaterialData ( data3 );
+            intel3->ComputeRequiredData ( data3, qsi );
+
+            int indexplastic =data.intGlobPtIndex;
+
+            REAL perm=data3.sol[isol][0];
+
+            mem[indexplastic].fpermeability.Resize ( 3 );
+            mem[indexplastic].fpermeability[0] = perm;//coesao
+            mem[indexplastic].fpermeability[1] = perm;//atritointerno
+            mem[indexplastic].fpermeability[2] = perm;//atritointerno
+
+        }
+        pMatWithMem2->SetUpdateMem ( false );
+
+    }
+
+}
+
+void DarcyTools::PostDarcy()
+{
+    TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
+    CreatePostProcessingMesh ( postprocdeter );
+
+    TPZVec<int> PostProcMatIds ( 1,1 );
+
+    TPZStack<std::string> PostProcVars, scalNames, vecNames;
+
+    PostProcessVariables ( scalNames, vecNames );
+
+    string vtkd = "darcypost.vtk";
+    postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtkd );
+
+    postprocdeter->PostProcess ( 0 );
+}
+void  DarcyTools::CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess )
+{
+    if ( PostProcess->ReferenceCompMesh() != fcmesh )
+    {
+
+        PostProcess->SetCompMesh ( fcmesh );
+
+        TPZVec<int> PostProcMatIds ( 1,1 );
+        TPZStack<std::string> PostProcVars, scalNames, vecNames;
+        PostProcessVariables ( scalNames, vecNames );
+
+        for ( int i=0; i<scalNames.size(); i++ )
+        {
+            PostProcVars.Push ( scalNames[i] );
+        }
+        for ( int i=0; i<vecNames.size(); i++ )
+        {
+            PostProcVars.Push ( vecNames[i] );
+        }
+        //
+        PostProcess->SetPostProcessVariables ( PostProcMatIds, PostProcVars );
+        TPZFStructMatrix structmatrix ( PostProcess->Mesh() );
+        structmatrix.SetNumThreads ( 0 );
+        PostProcess->SetStructuralMatrix ( structmatrix );
+    }
+    //
+    //Chamar com o analysis e nao com o postanalysis pois tem o acumulo de sols
+    PostProcess->TransferSolution();
+
+}
+
+void DarcyTools::PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames )
+{
+    scalNames.Push ( "Perm" );
+    scalNames.Push ( "Solution" );
+
+    vecNames.Push ( "Flux" );
+// if (!strcmp("Solution", name.c_str())) return 1;
+//     if (!strcmp("Pressure", name.c_str())) return 1;
+//     if (!strcmp("Derivative", name.c_str())) return 2;
+//     if (!strcmp("GradU", name.c_str())) return 2;
+//     if (!strcmp("KDuDx", name.c_str())) return 3;
+//     if (!strcmp("KDuDy", name.c_str())) return 4;
+//     if (!strcmp("KDuDz", name.c_str())) return 5;
+//     if (!strcmp("NormKDu", name.c_str())) return 6;
+//     if (!strcmp("MinusKGradU", name.c_str())) return 7;
+//     if (!strcmp("Flux", name.c_str())) return 7;
+//     if (!strcmp("POrder", name.c_str())) return 8;
+//     if (!strcmp("ExactPressure", name.c_str())) return 9;
+//     if (!strcmp("ExactSolution", name.c_str())) return 9;
+//     if (!strcmp("ExactFlux", name.c_str())) return 10;
+//     if (!strcmp("Div", name.c_str())) return 11;
+//     if (!strcmp("Divergence", name.c_str())) return 11;
+//     if (!strcmp("ExactDiv", name.c_str())) return 12;
+//     if (!strcmp("ExactDivergence", name.c_str())) return 12;
+//     if (!strcmp("FluxL2", name.c_str())) return 13;
+//     if (!strcmp("Perm", name.c_str())) return 14;
+
 
 }

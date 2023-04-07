@@ -9,9 +9,8 @@ class FieldTools
 {
 private:
 
-    TPZGeoMesh * fgmesh1;
-    TPZGeoMesh * fgmesh2;
-    TPZCompMesh * fcmesh;
+    TPZManVector<TPZGeoMesh*,3> fgmesh;
+    TPZManVector<TPZCompMesh*,3> fcmesh;
     REAL flx;//total slope heigth
     REAL fly;//water heigth
     REAL fM;//total heigth
@@ -21,14 +20,14 @@ private:
 public:
     FieldTools();
     FieldTools(FieldTools & copy);
-    FieldTools(TPZGeoMesh * gmesh1,TPZGeoMesh * gmesh2,REAL lx, REAL ly,int M,int type,int porder);
+    FieldTools(TPZManVector<TPZGeoMesh*,3> gmesh,REAL lx, REAL ly,int M,int type,int porder);
     ~FieldTools();
 
 
-    TPZCompMesh * ComputeField (  );
-    TPZCompMesh * CreateCompMeshKL ( TPZGeoMesh* gmesh );
+    void ComputeField (  );
+    TPZManVector<TPZCompMesh*,3>  CreateCompMeshKL ( );
     TPZFMatrix<REAL> CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata );
-    TPZManVector<TPZCompMesh *,2> SettingCreateFilds (  );
+    TPZManVector<TPZCompMesh *,3> SettingCreateFilds (  );
     void PrintMat ( std::string out,TPZFMatrix<REAL> mat );
     void  ReadFile ( std::string file,TPZFMatrix<REAL> &out );
     template <class T>
@@ -42,20 +41,20 @@ FieldTools::FieldTools()
 
 }
 
-FieldTools::FieldTools(FieldTools & copy): fgmesh1(copy.fgmesh1),fgmesh2(copy.fgmesh2),fcmesh(copy.fcmesh),flx(copy.flx),
+FieldTools::FieldTools(FieldTools & copy): fgmesh(copy.fgmesh),fcmesh(copy.fcmesh),flx(copy.flx),
 fly(copy.fly),fM(copy.fM),ftype(copy.ftype),fporder(copy.fporder)
 {
 
 }
-FieldTools::FieldTools(TPZGeoMesh * gmesh1,TPZGeoMesh * gmesh2,REAL lx, REAL ly,int M,int type,int porder)
+FieldTools::FieldTools(TPZManVector<TPZGeoMesh*,3> gmesh,REAL lx, REAL ly,int M,int type,int porder)
 {
-    fgmesh1=gmesh1;
-    fgmesh2=gmesh2;
+    fgmesh =gmesh;
     flx=lx;
     fly=ly;
     fM=M;
     ftype=type;
     fporder=porder;
+    fcmesh = CreateCompMeshKL ( );
 }
 
 FieldTools::~FieldTools()
@@ -63,35 +62,50 @@ FieldTools::~FieldTools()
 
 }
 
-TPZCompMesh * FieldTools::CreateCompMeshKL ( TPZGeoMesh* gmesh)
+TPZManVector<TPZCompMesh*,3>  FieldTools::CreateCompMeshKL ( )
 {
 
+    TPZManVector<TPZCompMesh*,3>  veccmesh(3);
     int id=1;
-    int dim = gmesh->Dimension();
-    TPZCompMesh * cmesh = new TPZCompMesh ( gmesh );
+    int dim = fgmesh[0]->Dimension();
+    TPZCompMesh * cmesh1 = new TPZCompMesh ( fgmesh[0] );
+    TPZCompMesh * cmesh2 = new TPZCompMesh ( fgmesh[1] );
+    TPZCompMesh * cmesh3 = new TPZCompMesh ( fgmesh[2] );
 
     REAL lz=1.;
 
-    KLMaterial * klmat = new KLMaterial ( id,flx,fly,lz,dim,ftype,fM );
+    KLMaterial * klmat1 = new KLMaterial ( id,20.,2.,lz,dim,ftype,fM );
+    KLMaterial * klmat2 = new KLMaterial ( id,20.,2.,lz,dim,ftype,fM );
+    KLMaterial * klmat3 = new KLMaterial ( id,1.,1.,lz,dim,ftype,fM );
 
-    cmesh->SetDefaultOrder ( fporder );
-    cmesh->SetDimModel ( dim );
-    cmesh->InsertMaterialObject ( klmat );
-    cmesh->SetAllCreateFunctionsContinuous();
-    cmesh->AutoBuild();
-    return cmesh;
-
-
+    cmesh1->SetDefaultOrder ( fporder );
+    cmesh2->SetDefaultOrder ( fporder );
+    cmesh3->SetDefaultOrder ( fporder );
+    cmesh1->SetDimModel ( dim );
+    cmesh2->SetDimModel ( dim );
+    cmesh3->SetDimModel ( dim );
+    cmesh1->InsertMaterialObject ( klmat1 );
+    cmesh2->InsertMaterialObject ( klmat2 );
+    cmesh3->InsertMaterialObject ( klmat3 );
+    cmesh1->SetAllCreateFunctionsContinuous();
+    cmesh2->SetAllCreateFunctionsContinuous();
+    cmesh3->SetAllCreateFunctionsContinuous();
+    cmesh1->AutoBuild();
+    cmesh2->AutoBuild();
+    cmesh3->AutoBuild();
+    veccmesh[0]=cmesh1;
+    veccmesh[1]=cmesh2;
+    veccmesh[2]=cmesh3;
+    return veccmesh;
 }
 
-TPZCompMesh * FieldTools::ComputeField (  )
+void FieldTools::ComputeField (  )
 {
 
-    TPZCompMesh * cmesh = CreateCompMeshKL (fgmesh1);
 
-    KLAnalysis * klanal = new KLAnalysis ( cmesh );
+    KLAnalysis * klanal = new KLAnalysis ( fcmesh[0] );
 
-    KLMaterial *mat = dynamic_cast<KLMaterial*> ( cmesh->MaterialVec() [1] );
+    KLMaterial *mat = dynamic_cast<KLMaterial*> ( fcmesh[0]->MaterialVec() [1] );
 
     klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
 
@@ -113,13 +127,17 @@ TPZCompMesh * FieldTools::ComputeField (  )
     string outdataatrito = "atrito.txt";
     TPZFMatrix<REAL> fieldphi = CreateLogNormalRandomField ( eigenfunctions, mean, cov, samples, outdataatrito );
 
-    cmesh->LoadSolution ( field );
 
-    string file1 ="coesao3.vtk";
+    mean=1.;
+    cov=0.2;
+    string outdataperm = "permeability.txt";
+    TPZFMatrix<REAL> fieldperm = CreateLogNormalRandomField ( eigenfunctions, mean, cov, samples, outdataperm );
 
-    klanal->Post ( file1,2,0 );
 
-    return cmesh;
+//     string file1 ="coesao3.vtk";
+//
+//     klanal->Post ( file1,2,0 );
+
 }
 
 TPZFMatrix<REAL> FieldTools::CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata )
@@ -189,35 +207,36 @@ void FieldTools::PrintMat ( std::string out,TPZFMatrix<REAL> mat )
 
 }
 
-TPZManVector<TPZCompMesh *,2> FieldTools::SettingCreateFilds ( )
-{
 
-    TPZManVector<TPZCompMesh *,2>  vecmesh ( 2 );
-    TPZCompMesh * cmeshfield;
-    TPZCompMesh*  cmeshfield2;
-    cmeshfield =  CreateCompMeshKL ( fgmesh1);
-    cmeshfield2 =  CreateCompMeshKL (fgmesh2 );
+TPZManVector<TPZCompMesh *,3> FieldTools::SettingCreateFilds ( )
+{
     string outco="/home/diogo/projects/pz-random-build-release/Projects/randomdarcy/coesao.txt";
     TPZFMatrix<REAL> readco;
     ReadFile ( outco,readco );
-    cmeshfield->LoadSolution ( readco );
+    fcmesh[0]->LoadSolution ( readco );
 
-    TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmeshfield );
+    TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( fcmesh[0] );
     analysis1x->LoadSolution ( readco );
 
 
     string outphi="/home/diogo/projects/pz-random-build-release/Projects/randomdarcy/atrito.txt";
     TPZFMatrix<REAL> readphi;
     ReadFile ( outphi,readphi );
-    cmeshfield2->LoadSolution ( readphi );
+    fcmesh[1]->LoadSolution ( readphi );
 
-    TPZElastoPlasticAnalysis * analysis2x  = new TPZElastoPlasticAnalysis ( cmeshfield2 );
+    TPZElastoPlasticAnalysis * analysis2x  = new TPZElastoPlasticAnalysis ( fcmesh[1] );
     analysis2x->LoadSolution ( readphi );
 
-    vecmesh[0]=cmeshfield;
-    vecmesh[1]=cmeshfield2;
+    string outperm="/home/diogo/projects/pz-random-build-release/Projects/randomdarcy/permeability.txt";
+    TPZFMatrix<REAL> readperm;
+    ReadFile ( outperm,readperm );
+    fcmesh[2]->LoadSolution ( readperm );
 
-    return vecmesh;
+    TPZElastoPlasticAnalysis * analysis3x  = new TPZElastoPlasticAnalysis ( fcmesh[2] );
+    analysis3x->LoadSolution ( readperm );
+
+
+    return fcmesh;
 }
 
 void  FieldTools::ReadFile ( std::string file,TPZFMatrix<REAL> &out )

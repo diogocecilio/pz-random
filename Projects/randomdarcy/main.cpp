@@ -50,49 +50,38 @@ TPZGeoMesh * CreateGMeshRef ( int ref,int ref2,string file );
 TPZGeoMesh * CreateGMesh ( int ref,string file );
 
 void SolveP();
-
-void CreateField();
+void MonteCarlo ( int a,int b );
 
 int main()
 {
 
 
-    SolveP();
+    //SolveP();
 
-
+    MonteCarlo ( 0,1000);
 
     return 0;
 }
 
-void CreateField()
-{
-    int ref=2;
-    int ref2=0;
-    int porder=1;
-    string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
-    TPZGeoMesh *gmesh1= CreateGMeshRef ( ref,ref2,file );
-    TPZGeoMesh *gmesh2= CreateGMeshRef ( ref,ref2,file );
-    REAL lx=20.;
-    REAL ly=2.;
-    int M=50;
-    int type=3;
-    FieldTools fields(gmesh1,gmesh2,lx, ly, M, type, porder);
-
-    fields.ComputeField (  );
-}
 
 void SolveP()
 {
     int ref=2;
-    int ref2=1;
+    int ref2=2;
     int porder=2;
     string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
 
-    //TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,ref2,file );
-    TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,ref2,file );
+    //TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
     TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
     TPZGeoMesh *gmeshfields1 = CreateGMesh ( ref,file );
     TPZGeoMesh *gmeshfields2 = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfields3 = CreateGMesh ( ref,file );
+
+    TPZManVector<TPZGeoMesh*,3> gmeshvec ( 3 );
+    gmeshvec[0]=gmeshfields1;
+    gmeshvec[1]=gmeshfields2;
+    gmeshvec[2]=gmeshfields3;
 
     REAL gammaagua=10.;
     REAL gammasolo=20.;
@@ -101,25 +90,22 @@ void SolveP()
     REAL H=10;
     REAL Hw=10.;
     REAL Ht=40.;
-    REAL gammaW=10.;
-    DarcyTools darcytools(gmeshdarcy,H,Hw,Ht,gammaW,porder);
 
-    darcytools.SolveDarcyProlem();
+    DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder );
+    PlasticityTools plastictools ( gmeshpalstic,0,gammasolo,numthreads,porder );
 
-    PlasticityTools plastictools(gmeshpalstic,gammaagua,gammasolo,numthreads,porder);
 
-    darcytools.SetFlux(plastictools.fcmesh);
-
-    int porderfield=1;
     REAL lx=20.;
     REAL ly=2.;
     int M=50;
     int type=3;
-    FieldTools fields(gmeshfields1,gmeshfields2,lx, ly, M, type, porderfield);
-    TPZManVector<TPZCompMesh*,2> vecmesh;
-    if(false)
+    int porderfield=1;
+
+    FieldTools fields ( gmeshvec,lx, ly, M, type, porderfield );
+    TPZManVector<TPZCompMesh*,3> vecmesh;
+    if ( false )
     {
-        fields.ComputeField (  );
+        fields.ComputeField ( );
         return;
     }
     else
@@ -127,8 +113,12 @@ void SolveP()
         vecmesh = fields.SettingCreateFilds();
     }
 
+    darcytools.TransferSolutionFrom ( vecmesh,0 );
+    darcytools.SolveDarcyProlem();
+    darcytools.SetFlux ( plastictools.fcmesh );
+    darcytools.PostDarcy();
 
-    plastictools.TransferSolutionFrom(vecmesh,2);
+    plastictools.TransferSolutionFrom ( vecmesh,0 );
 
     REAL tolfs =0.01;
     int numiterfs =20;
@@ -137,11 +127,96 @@ void SolveP()
     REAL l =0.2;
     REAL lambda0=0.61;
 
-    REAL fs = plastictools.Solve(tolfs,numiterfs,tolres,numiterres,l,lambda0);
+    REAL fs = plastictools.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
 
     plastictools.PostPlasticity();
 
 }
+
+void MonteCarlo ( int a,int b )
+{
+    int ref=2;
+    int ref2=2;
+    int porder=2;
+    string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
+
+    TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,ref2,file );
+    //TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfields1 = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfields2 = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfields3 = CreateGMesh ( ref,file );
+
+    TPZManVector<TPZGeoMesh*,3> gmeshvec ( 3 );
+    gmeshvec[0]=gmeshfields1;
+    gmeshvec[1]=gmeshfields2;
+    gmeshvec[2]=gmeshfields3;
+
+    REAL gammaagua=10.;
+    REAL gammasolo=20.;
+    int numthreads=10;
+
+    REAL H=10;
+    REAL Hw=10.;
+    REAL Ht=40.;
+
+    DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder );
+    PlasticityTools plastictools ( gmeshpalstic,0,gammasolo,numthreads,porder );
+
+
+    REAL lx=20.;
+    REAL ly=2.;
+    int M=50;
+    int type=3;
+    int porderfield=1;
+
+    FieldTools fields ( gmeshvec,lx, ly, M, type, porderfield );
+    TPZManVector<TPZCompMesh*,3> vecmesh;
+    if ( false )
+    {
+        fields.ComputeField ( );
+        return;
+    }
+    else
+    {
+        vecmesh = fields.SettingCreateFilds();
+    }
+
+
+    for ( int imc=a; imc<b; imc++ )
+    {
+        string saidafs = "post/fs";
+        string vtk = "post/saidamontecarlo";
+        auto var=to_string ( imc );
+        saidafs+=var;
+        vtk+=var;
+
+        saidafs+=".dat";
+        vtk+=".vtk";
+
+        ofstream out ( saidafs );
+        std::cout << "imc = " <<  imc << std::endl;
+        darcytools.TransferSolutionFrom ( vecmesh,imc );
+        darcytools.SolveDarcyProlem();
+        darcytools.SetFlux ( plastictools.fcmesh );
+        darcytools.PostDarcy();
+
+        plastictools.TransferSolutionFrom ( vecmesh,imc );
+
+        REAL tolfs =0.01;
+        int numiterfs =20;
+        REAL tolres = 1.e-6;
+        int numiterres =20;
+        REAL l =0.2;
+        REAL lambda0=0.61;
+
+        REAL fs = plastictools.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+
+        plastictools.PostPlasticity();
+        out << fs << std::endl;
+    }
+}
+
 TPZGeoMesh * CreateGMeshRef ( int ref,int ref2,string file )
 {
 

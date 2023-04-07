@@ -149,6 +149,7 @@ if (!strcmp("Solution", name.c_str())) return 1;
     if (!strcmp("ExactDiv", name.c_str())) return 12;
     if (!strcmp("ExactDivergence", name.c_str())) return 12;
     if (!strcmp("FluxL2", name.c_str())) return 13;
+    if (!strcmp("Perm", name.c_str())) return 14;
     return TPZMaterial::VariableIndex(name);
 
 }
@@ -169,6 +170,7 @@ int TPZDarcyMatWithMem<TMEM>::NSolutionVariables(int var){
     if (var == 11) return 1;     // Div/Divergence
     if (var == 12) return 1;     // ExactDiv/ExactDivergence
     if (var == 13) return fDim;  // FluxL2
+    if (var == 14) return 1;  // FluxL2
 
 
     return TPZMaterial::NSolutionVariables(var);
@@ -292,6 +294,11 @@ void TPZDarcyMatWithMem<TMEM>::Solution(TPZMaterialData &data, int var, TPZVec<S
                 res += exact_flux(id, 0);
             }
             Solout[0] = res;
+
+            return;
+        }
+            case 14: {
+            Solout[0] = perm[0];
 
             return;
         }
