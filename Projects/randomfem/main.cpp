@@ -66,15 +66,15 @@ void MonteCarlo();
 int main()
 {
 
-//     int ref=3;
-//     int porder=1;
-//     TPZGeoMesh *gmesh = CreateGMeshQuadrado(ref);
-//
-//     TPZCompMesh * cmeshfield =  ComputeField(gmesh,porder);
-//
-//     SolveElastic(cmeshfield,0);
+    int ref=3;
+    int porder=1;
+    TPZGeoMesh *gmesh = CreateGMeshQuadrado(ref);
 
-    MonteCarlo();
+    TPZCompMesh * cmeshfield =  ComputeField(gmesh,porder);
+
+    SolveElastic(cmeshfield,0);
+
+//    MonteCarlo();
 
     return 0;
 }
@@ -106,13 +106,18 @@ void MonteCarlo()
 REAL SolveElastic(TPZCompMesh * rcmesh,int imc)
 {
 
-    TPZGeoMesh *gmesh = rcmesh->Reference();
+//     TPZGeoMesh *gmesh = rcmesh->Reference();
+//
+//     int porder = rcmesh->GetDefaultOrder();
 
-    int porder = rcmesh->GetDefaultOrder();
+        int ref=3;
+    int porder=1;
+    TPZGeoMesh *gmesh = CreateGMeshQuadrado(ref);
+
 
     TPZCompMesh * cmesh = CreateCompMeshElastMatWithMem(gmesh,porder);
 
-    SetRandomField(rcmesh,cmesh,imc);
+   // SetRandomField(rcmesh,cmesh,imc);
 
     TPZAnalysis *analysis =  CreateAnalysis(cmesh);
      analysis->Run();

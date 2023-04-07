@@ -26,7 +26,7 @@ Install Directory=/usr/local
 Runtime=Host System
 
 [Launch]
-Launch Configurations=Launch Configuration 0,Launch Configuration 1
+Launch Configurations=Launch Configuration 0,Launch Configuration 1,Launch Configuration 2,Launch Configuration 3
 
 [Launch][Launch Configuration 0]
 Configured Launch Modes=execute
@@ -39,7 +39,7 @@ Arguments=
 Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
 Dependency Action=Nothing
 EnvironmentGroup=
-Executable=file:///home/diogo/projects/pz-random-build-release/Projects/randomfemplasticityv2/randomfemplasticityv2
+Executable=file:///home/diogo/projects/pz-random-build-release/Projects/randomfemplasticitymulthread/randomfemplasticitymulthread
 External Terminal=konsole --noclose --workdir %workdir -e %exe
 Kill Before Executing Again=4194304
 Project Target=pz-random,Projects,randomfem,randomfem
@@ -50,7 +50,7 @@ isExecutable=true
 [Launch][Launch Configuration 1]
 Configured Launch Modes=execute
 Configured Launchers=nativeAppLauncher
-Name=debug
+Name=rdarcy-release
 Type=Native Application
 
 [Launch][Launch Configuration 1][Data]
@@ -58,10 +58,48 @@ Arguments=
 Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
 Dependency Action=Nothing
 EnvironmentGroup=
-Executable=file:///home/diogo/projects/pz-random-build-debug/Projects/randomfemplasticityv2/randomfemplasticityv2
+Executable=file:///home/diogo/projects/pz-random-build-release/Projects/randomdarcy/randomdarcy
 External Terminal=konsole --noclose --workdir %workdir -e %exe
 Kill Before Executing Again=4194304
-Project Target=pz-random,Projects,randomfem,randomfem
+Project Target=pz-random,Projects,randomdarcy,randomdarcy
+Use External Terminal=false
+Working Directory=
+isExecutable=true
+
+[Launch][Launch Configuration 2]
+Configured Launch Modes=execute
+Configured Launchers=nativeAppLauncher
+Name=rdarcy-debug
+Type=Native Application
+
+[Launch][Launch Configuration 2][Data]
+Arguments=
+Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
+Dependency Action=Nothing
+EnvironmentGroup=
+Executable=file:///home/diogo/projects/pz-random
+External Terminal=konsole --noclose --workdir %workdir -e %exe
+Kill Before Executing Again=4194304
+Project Target=pz-random,Projects,randomdarcy,randomdarcy
+Use External Terminal=false
+Working Directory=
+isExecutable=false
+
+[Launch][Launch Configuration 3]
+Configured Launch Modes=execute
+Configured Launchers=nativeAppLauncher
+Name=relastic
+Type=Native Application
+
+[Launch][Launch Configuration 3][Data]
+Arguments=
+Dependencies=@Variant(\x00\x00\x00\t\x00\x00\x00\x00\x00)
+Dependency Action=Nothing
+EnvironmentGroup=
+Executable=file:///home/diogo/projects/pz-random-build-debug/Projects/randomfem/randomfem
+External Terminal=konsole --noclose --workdir %workdir -e %exe
+Kill Before Executing Again=4194304
+Project Target=pz-random,Projects,randomdarcy,randomdarcy
 Use External Terminal=false
 Working Directory=
 isExecutable=true

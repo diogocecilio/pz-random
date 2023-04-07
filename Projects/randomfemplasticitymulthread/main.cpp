@@ -57,8 +57,6 @@
 typedef TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> LEMC;
 
 typedef   TPZMatElastoPlastic2D <LEMC, TPZElastoPlasticMem > plasticmat;
-void myTreads ( int a, int b, TPZManVector<TPZCompMesh *,2> vecmesh );
-
 
 TPZGeoMesh * CreateGMesh ( int ref,string file );
 
@@ -86,7 +84,7 @@ REAL SolveElastoplastic ( TPZManVector<TPZCompMesh*,2>,int imc, string vtk,int p
 
 void MonteCarlo();
 
-void MonteCarlo(TPZManVector<TPZCompMesh*,2> vecmesh, int a,int b);
+void MonteCarlo ( int a,int b, TPZManVector<TPZCompMesh *,2> vecmesh, string file );
 
 void LoadingRamp ( TPZCompMesh * cmesh,  REAL factor,REAL gammasolo, REAL gammaagua );
 
@@ -103,18 +101,200 @@ void ComputeSolution ( TPZCompEl *cel, TPZFMatrix<REAL> &phi,TPZSolVec &sol );
 
 REAL ComputeLogNormaVar ( REAL mu,REAL cov, REAL valsqrtvecxi );
 
+void SolveMultiThread ( int a0,int b0, int nthreads );
+
+
+TPZManVector<TPZCompMesh *,2> SettingCreateFilds ( TPZGeoMesh* gmesh1,TPZGeoMesh* gmesh2,int porder,bool createfield );
+
+void myTreads ( int a, int b, TPZManVector<TPZCompMesh *,2> vecmesh, string namefolderx )
+{
+    MonteCarlo ( a,b, vecmesh,namefolderx );
+}
+
 int main()
 {
 
+    string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
+    int porder=1;
+    int ref=2;
+    TPZGeoMesh *gmesh1 = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmesh2 = CreateGMesh ( ref,file );
 
-//    SolveDeterministic();
+    bool createfield=false;
+    TPZManVector<TPZCompMesh *,2> vecmesh = SettingCreateFilds ( gmesh1,gmesh2, porder, createfield );
 
-//    return 0;
+    int a=230;
+    int b=300;
+    //MonteCarlo(  a, b,  vecmesh,  file);
 
-    MonteCarlo();
+    int nthreads=10;
+    SolveMultiThread ( a,b,nthreads );
+
 
     return 0;
 }
+
+void SolveMultiThread ( int a0,int b0,int nthreads )
+{
+    int samples=b0-a0;
+    std::vector <std::thread> threadsmat1,threadsmat2;
+
+    int delta = int ( samples/nthreads );
+    int a=a0;
+    int b=a+delta;
+
+    for ( int i=0; i<nthreads; i++ )
+    {
+        std::cout << "a = "<< a <<std::endl;
+        std::cout << "b = "<< b <<std::endl;
+
+        string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
+        int porder=1;
+        int ref=2;
+        bool createfield=false;
+
+        TPZGeoMesh *gmesh1 = CreateGMesh ( ref,file );
+        TPZGeoMesh *gmesh2 = CreateGMesh ( ref,file );
+
+        TPZManVector<TPZCompMesh *,2> vecmesh = SettingCreateFilds ( gmesh1, gmesh2, porder, createfield );
+
+        std::thread threadx ( myTreads,a,b,vecmesh,file );
+
+        threadsmat1.push_back ( std::move ( threadx ) );
+
+        a=b+1;
+        b+=delta;
+    }
+
+    for ( auto &threadx: threadsmat1 ) threadx.join();
+}
+
+
+TPZManVector<TPZCompMesh *,2> SettingCreateFilds ( TPZGeoMesh* gmesh1,TPZGeoMesh* gmesh2,int porder,bool createfield )
+{
+
+    TPZManVector<TPZCompMesh *,2>  vecmesh ( 2 );
+    TPZCompMesh * cmeshfield;
+    TPZCompMesh*  cmeshfield2;
+    if ( createfield )
+    {
+        cmeshfield =  ComputeField ( gmesh1,porder );
+        return 0;
+    }
+    else
+    {
+        cmeshfield =  CreateCompMeshKL ( gmesh1,porder );
+        cmeshfield2 =  CreateCompMeshKL ( gmesh2,porder );
+        string outco="/home/diogo/projects/pz-random-build-release/Projects/randomfemplasticitymulthread/coesao.txt";
+        TPZFMatrix<REAL> readco;
+        ReadFile ( outco,readco );
+        cmeshfield->LoadSolution ( readco );
+
+        TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmeshfield );
+        analysis1x->LoadSolution ( readco );
+
+
+        string outphi="/home/diogo/projects/pz-random-build-release/Projects/randomfemplasticitymulthread/atrito.txt";
+        TPZFMatrix<REAL> readphi;
+        ReadFile ( outphi,readphi );
+        cmeshfield2->LoadSolution ( readphi );
+
+        TPZElastoPlasticAnalysis * analysis2x  = new TPZElastoPlasticAnalysis ( cmeshfield2 );
+        analysis2x->LoadSolution ( readphi );
+    }
+
+    vecmesh[0]=cmeshfield;
+    vecmesh[1]=cmeshfield2;
+
+    return vecmesh;
+}
+
+void MonteCarlo ( int a,int b, TPZManVector<TPZCompMesh *,2> vecmesh, string file )
+{
+    int ref=2;
+    int porder=1;
+
+    int samples = vecmesh[0]->Solution().Cols();
+
+    std::cout << "samples = " <<  samples << std::endl;
+
+
+
+
+    for ( int imc=a; imc<b; imc++ )
+    {
+        string saidafs = "post/fs";
+        string vtk = "post/saidamontecarlo";
+        auto var=to_string ( imc );
+        saidafs+=var;
+        vtk+=var;
+
+        saidafs+=".dat";
+        vtk+=".vtk";
+
+        ofstream out ( saidafs );
+        std::cout << "imc = " <<  imc << std::endl;
+        REAL fs= SolveElastoplastic ( vecmesh,imc,vtk,porder,ref );
+        out << fs << std::endl;
+    }
+}
+
+
+REAL SolveElastoplastic ( TPZManVector<TPZCompMesh*,2>  vecmesh, int imc,string vtk,int porder,int ref )
+{
+
+    int porderint=porder+1;//porder nao importa?
+    int refint =ref;//ref deve ser maior ou igual ao ref do kl?
+    //TPZGeoMesh *gmesh = rcmesh1->Reference();
+    //string file1 ="/home/diogo/projects/pz-random/data/mesh.msh";
+    string file1 ="/home/diogo/projects/pz-random/data/tri-struc.msh";
+    TPZGeoMesh *gmesh = CreateGMeshRef ( refint,file1 );
+
+    TPZCompMesh * cmesh = CreateCompMesh ( gmesh,porderint );
+
+    REAL factor =1.;
+    REAL gammasolo=20.;
+    REAL gammaagua=0.;
+    LoadingRamp ( cmesh,factor, gammasolo,  gammaagua );
+
+    // TransferSolution2 ( vecmesh[0],cmesh,imc );
+    TransferSolution ( vecmesh,cmesh,imc );
+    //SetRandomField(rcmesh1,rcmesh2,cmesh,imc);
+
+    TPZElastoPlasticAnalysis *analysis =  CreateAnalysis ( cmesh );
+
+    REAL tolfs =0.01;
+    int numiterfs =20;
+    REAL tolres = 1.e-6;
+    int numiterres =20;
+    REAL l =0.2;
+    REAL lambda0=0.1;
+    bool converge;
+
+    REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    if ( converge==false )
+    {
+        cout << "calling gravity increase"<<endl;
+        REAL fs = GravityIncrease ( cmesh );
+    }
+
+
+    TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
+    CreatePostProcessingMesh ( postprocdeter, cmesh );
+
+    TPZVec<int> PostProcMatIds ( 1,1 );
+
+    TPZStack<std::string> PostProcVars, scalNames, vecNames;
+
+    PostProcessVariables ( scalNames, vecNames );
+
+    postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
+
+    postprocdeter->PostProcess ( 0 );
+
+    return fs;
+}
+
 
 
 void SolveDeterministic()
@@ -165,67 +345,6 @@ void SolveDeterministic()
     postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
 
     postprocdeter->PostProcess ( 0 );
-}
-
-void MonteCarlo(TPZManVector<TPZCompMesh*,2> vecmesh, int a,int b)
-{
-    int ref=2;
-    int porder=1;
-    //string file ="/home/diogo/projects/pz-random/data/mesh.msh";
-    //string file ="/home/diogo/projects/pz-random/data/tri657.msh";
-    string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
-    TPZGeoMesh *gmesh1 = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmesh2 = CreateGMesh ( ref,file );
-
-    TPZCompMesh * cmeshfield;
-    TPZCompMesh*  cmeshfield2;
-    if ( 0 )
-    {
-        cmeshfield =  ComputeField ( gmesh1,porder );
-        return;
-    }
-    else
-    {
-        cmeshfield =  CreateCompMeshKL ( gmesh1,porder );
-        cmeshfield2 =  CreateCompMeshKL ( gmesh2,porder );
-        string outco="/home/diogo/projects/pz-random-build-release/Projects/randomfemplasticityv2/coesao.txt";
-        TPZFMatrix<REAL> readco;
-        ReadFile ( outco,readco );
-        cmeshfield->LoadSolution ( readco );
-
-        TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmeshfield );
-        analysis1x->LoadSolution ( readco );
-
-
-        string outphi="/home/diogo/projects/pz-random-build-release/Projects/randomfemplasticityv2/atrito.txt";
-        TPZFMatrix<REAL> readphi;
-        ReadFile ( outphi,readphi );
-        cmeshfield2->LoadSolution ( readphi );
-
-        TPZElastoPlasticAnalysis * analysis2x  = new TPZElastoPlasticAnalysis ( cmeshfield2 );
-        analysis2x->LoadSolution ( readphi );
-    }
-
-    vecmesh[0]=cmeshfield;
-    vecmesh[1]=cmeshfield2;
-
-    int samples = cmeshfield->Solution().Cols();
-
-    std::cout << "samples = " <<  samples << std::endl;
-
-    ofstream out ( "fs2.dat" );
-
-
-    for ( int imc=293; imc<b; imc++ )
-    {
-        string vtk = "saidamontecarlo";
-        auto var=to_string ( imc );
-        var+=".vtk";
-        vtk+=var;
-        std::cout << "imc = " <<  imc << std::endl;
-        REAL fs= SolveElastoplastic ( vecmesh,imc,vtk,porder,ref );
-        out << fs << std::endl;
-    }
 }
 
 void MonteCarlo()
@@ -292,60 +411,6 @@ void MonteCarlo()
 
 }
 
-REAL SolveElastoplastic ( TPZManVector<TPZCompMesh*,2>  vecmesh, int imc,string vtk,int porder,int ref )
-{
-
-    int porderint=porder+1;//porder nao importa?
-    int refint =ref;//ref deve ser maior ou igual ao ref do kl?
-    //TPZGeoMesh *gmesh = rcmesh1->Reference();
-    //string file1 ="/home/diogo/projects/pz-random/data/mesh.msh";
-    string file1 ="/home/diogo/projects/pz-random/data/tri-struc.msh";
-    TPZGeoMesh *gmesh = CreateGMeshRef ( refint,file1 );
-
-    TPZCompMesh * cmesh = CreateCompMesh ( gmesh,porderint );
-
-    REAL factor =1.;
-    REAL gammasolo=20.;
-    REAL gammaagua=0.;
-    LoadingRamp ( cmesh,factor, gammasolo,  gammaagua );
-
-    // TransferSolution2 ( vecmesh[0],cmesh,imc );
-    TransferSolution ( vecmesh,cmesh,imc );
-    //SetRandomField(rcmesh1,rcmesh2,cmesh,imc);
-
-    TPZElastoPlasticAnalysis *analysis =  CreateAnalysis ( cmesh );
-
-    REAL tolfs =0.01;
-    int numiterfs =20;
-    REAL tolres = 1.e-6;
-    int numiterres =20;
-    REAL l =0.2;
-    REAL lambda0=0.1;
-    bool converge;
-
-    REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
-    if ( converge==false )
-    {
-        cout << "calling gravity increase"<<endl;
-        REAL fs = GravityIncrease ( cmesh );
-    }
-
-
-    TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
-    CreatePostProcessingMesh ( postprocdeter, cmesh );
-
-    TPZVec<int> PostProcMatIds ( 1,1 );
-
-    TPZStack<std::string> PostProcVars, scalNames, vecNames;
-
-    PostProcessVariables ( scalNames, vecNames );
-
-    postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
-
-    postprocdeter->PostProcess ( 0 );
-
-    return fs;
-}
 
 TPZCompMesh * ComputeField ( TPZGeoMesh *gmesh,int porder )
 {
