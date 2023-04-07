@@ -113,10 +113,11 @@ void SolveP()
         vecmesh = fields.SettingCreateFilds();
     }
 
+    string vtkd="darcy.vtk";
     darcytools.TransferSolutionFrom ( vecmesh,0 );
     darcytools.SolveDarcyProlem();
     darcytools.SetFlux ( plastictools.fcmesh );
-    darcytools.PostDarcy();
+    darcytools.PostDarcy(vtkd);
 
     plastictools.TransferSolutionFrom ( vecmesh,0 );
 
@@ -128,8 +129,8 @@ void SolveP()
     REAL lambda0=0.61;
 
     REAL fs = plastictools.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
-
-    plastictools.PostPlasticity();
+    string vtkp="plastic.vtk";
+    plastictools.PostPlasticity(vtkp);
 
 }
 
@@ -186,20 +187,21 @@ void MonteCarlo ( int a,int b )
     for ( int imc=a; imc<b; imc++ )
     {
         string saidafs = "post/fs";
-        string vtk = "post/saidamontecarlo";
+        string vtk1 = "postvtk/saidamontecarloplasticity";
+        string vtk2 = "postvtk/saidamontecarlodarcy";
         auto var=to_string ( imc );
         saidafs+=var;
-        vtk+=var;
-
+        vtk1+=var;
+        vtk2+=var;
         saidafs+=".dat";
-        vtk+=".vtk";
-
+        vtk1+=".vtk";
+        vtk2+=".vtk";
         ofstream out ( saidafs );
         std::cout << "imc = " <<  imc << std::endl;
         darcytools.TransferSolutionFrom ( vecmesh,imc );
         darcytools.SolveDarcyProlem();
         darcytools.SetFlux ( plastictools.fcmesh );
-        darcytools.PostDarcy();
+        darcytools.PostDarcy(vtk2);
 
         plastictools.TransferSolutionFrom ( vecmesh,imc );
 
@@ -212,7 +214,7 @@ void MonteCarlo ( int a,int b )
 
         REAL fs = plastictools.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
 
-        plastictools.PostPlasticity();
+        plastictools.PostPlasticity(vtk1);
         out << fs << std::endl;
     }
 }

@@ -50,7 +50,7 @@ public:
 
     REAL Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres, REAL l,REAL lambda0);
 
-    void PostPlasticity();
+    void PostPlasticity(string vtkd);
 
     void CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess );
 
@@ -449,7 +449,7 @@ REAL PlasticityTools::GravityIncrease (  )
     return FS;
 }
 
-void PlasticityTools::PostPlasticity()
+void PlasticityTools::PostPlasticity(string vtkd)
 {
     TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
     CreatePostProcessingMesh ( postprocdeter );
@@ -460,7 +460,7 @@ void PlasticityTools::PostPlasticity()
 
     PostProcessVariables ( scalNames, vecNames );
 
-    string vtkd = "postprocessdeter.vtk";
+    //string vtkd = "postprocessdeter.vtk";
     postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtkd );
 
     postprocdeter->PostProcess ( 0 );

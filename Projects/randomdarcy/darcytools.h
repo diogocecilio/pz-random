@@ -35,7 +35,7 @@ public:
 
     void  CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess );
 
-    void PostDarcy();
+    void PostDarcy(string vtk);
 
 };
 
@@ -386,7 +386,7 @@ void DarcyTools::TransferSolutionFrom ( TPZManVector<TPZCompMesh*,3> vecmesh,int
 
 }
 
-void DarcyTools::PostDarcy()
+void DarcyTools::PostDarcy(string vtk)
 {
     TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
     CreatePostProcessingMesh ( postprocdeter );
@@ -397,8 +397,7 @@ void DarcyTools::PostDarcy()
 
     PostProcessVariables ( scalNames, vecNames );
 
-    string vtkd = "darcypost.vtk";
-    postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtkd );
+    postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
 
     postprocdeter->PostProcess ( 0 );
 }
