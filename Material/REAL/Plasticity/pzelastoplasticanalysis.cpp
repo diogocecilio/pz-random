@@ -836,7 +836,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
             displace+=dww;
             normdu=Norm ( dww ) ;
             cout << " counter  = " << counter+1 <<" normrhs = " <<residualrhs << " normdu = " << normdu << " lambda = "<< lambda << " dlamb = "<< dlamb << " l = " << l << endl;
-            if ( ( diffnorm>1000 && counter>3 ) || normdu>1000. )
+            if ( ( diffnorm>1000 && counter>3 ) || normdu>100. )
             {
 
                 conv=false;

@@ -9,3 +9,5 @@ add_subdirectory(randomfemplasticityv2)
 add_subdirectory(randomfemplasticitymulthread)
 
 add_subdirectory(randomdarcy)
+
+add_subdirectory(stochasticslope)

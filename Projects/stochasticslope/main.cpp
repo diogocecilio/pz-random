@@ -58,7 +58,7 @@ int main()
 
     //SolveP();
 
-   // MonteCarlo ( 0,2);
+  //  MonteCarlo ( 0,2);
 
     return 0;
 }
@@ -179,10 +179,9 @@ void MonteCarlo ( int a,int b )
     int type=3;
     int porderfield=1;
 
-    cout << "dasds"<<endl;
     FieldTools fields ( gmeshvec,lx, ly, M, type, porderfield );
     TPZManVector<TPZCompMesh*,3> vecmesh;
-    if ( true )
+    if ( false )
     {
         fields.ComputeField ( );
         return;
