@@ -82,8 +82,11 @@ void Forcing(const TPZVec<REAL> &pt, TPZVec<STATE> &disp)
         const auto &z=pt[2];
         REAL yy=40-y;
         REAL hw=10.;
+
         REAL H = 10.;
         REAL gammaaugua=10.;
+       // cout << "--------------------------------------- hw/H = "<< hw/H << endl;
+        //REAL gammaaugua=0.001;
 
         if(yy<hw && yy<H)
         {
@@ -93,6 +96,15 @@ void Forcing(const TPZVec<REAL> &pt, TPZVec<STATE> &disp)
         {
             disp[0]  = hw*gammaaugua;
         }
+//         if(yy<hw && yy<H)
+//         {
+//             disp[0]  =   0 ;
+//         }
+//         else
+//         {
+//             disp[0]  = gammaaugua * (yy-hw);
+//         }
+
 }
 
 TPZCompMesh * DarcyTools::CreateCMeshDarcy( )
@@ -150,17 +162,17 @@ TPZCompMesh * DarcyTools::CreateCMeshDarcy( )
 
     val2(0,0)=0;
 	TPZMaterial * BCond3 = material->CreateBC ( material, -5, 0, val1, val2 );//left
-	BCond2->SetForcingFunction(pressure);
+
 
     val2(0,0)=10*10;
     TPZMaterial * BCond4 = material->CreateBC ( material, -2, 0, val1, val2 );//right
-	BCond2->SetForcingFunction(pressure);
+
 
     cmesh->InsertMaterialObject(BCond0);
     cmesh->InsertMaterialObject(BCond1);
 	cmesh->InsertMaterialObject(BCond2);
-    cmesh->InsertMaterialObject(BCond3);
-    cmesh->InsertMaterialObject(BCond4);
+ //  cmesh->InsertMaterialObject(BCond3);
+ //   cmesh->InsertMaterialObject(BCond4);
 
     cmesh->SetAllCreateFunctionsContinuousWithMem();
     cmesh->AutoBuild();

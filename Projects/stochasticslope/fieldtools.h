@@ -9,25 +9,30 @@ class FieldTools
 {
 private:
 
-    TPZManVector<TPZGeoMesh*,3> fgmesh;
-    TPZManVector<TPZCompMesh*,3> fcmesh;
+    TPZGeoMesh* fgmesh;
+    TPZCompMesh* fcmesh;
     REAL flx;//total slope heigth
     REAL fly;//water heigth
     REAL fM;//total heigth
     REAL ftype;
     int fporder;
+    string ffile;
 
 public:
     FieldTools();
     FieldTools(FieldTools & copy);
-    FieldTools(TPZManVector<TPZGeoMesh*,3> gmesh,REAL lx, REAL ly,int M,int type,int porder);
+    FieldTools(TPZGeoMesh* gmesh,REAL lx, REAL ly,int M,int type,int porder,string file);
     ~FieldTools();
 
+    TPZCompMesh* GetCMesh()
+    {
+        return fcmesh;
+    }
 
-    void ComputeField (  );
-    TPZManVector<TPZCompMesh*,3>  CreateCompMeshKL ( );
+    void ComputeField (REAL mean,REAL cov,int samples );
+    TPZCompMesh* CreateCompMeshKL ( );
     TPZFMatrix<REAL> CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata );
-    TPZManVector<TPZCompMesh *,3> SettingCreateFilds (  );
+    TPZCompMesh * SettingCreateFild (  );
     void PrintMat ( std::string out,TPZFMatrix<REAL> mat );
     void  ReadFile ( std::string file,TPZFMatrix<REAL> &out );
     template <class T>
@@ -46,8 +51,9 @@ fly(copy.fly),fM(copy.fM),ftype(copy.ftype),fporder(copy.fporder)
 {
 
 }
-FieldTools::FieldTools(TPZManVector<TPZGeoMesh*,3> gmesh,REAL lx, REAL ly,int M,int type,int porder)
+FieldTools::FieldTools(TPZGeoMesh*gmesh,REAL lx, REAL ly,int M,int type,int porder,string file)
 {
+    ffile=file;
     fgmesh =gmesh;
     flx=lx;
     fly=ly;
@@ -62,81 +68,41 @@ FieldTools::~FieldTools()
 
 }
 
-TPZManVector<TPZCompMesh*,3>  FieldTools::CreateCompMeshKL ( )
+TPZCompMesh* FieldTools::CreateCompMeshKL ( )
 {
 
-    TPZManVector<TPZCompMesh*,3>  veccmesh(3);
     int id=1;
-    int dim = fgmesh[0]->Dimension();
-    TPZCompMesh * cmesh1 = new TPZCompMesh ( fgmesh[0] );
-    TPZCompMesh * cmesh2 = new TPZCompMesh ( fgmesh[1] );
-    TPZCompMesh * cmesh3 = new TPZCompMesh ( fgmesh[2] );
+    int dim = fgmesh->Dimension();
+    TPZCompMesh * cmesh1 = new TPZCompMesh ( fgmesh );
 
     REAL lz=1.;
 
-    KLMaterial * klmat1 = new KLMaterial ( id,20.,2.,lz,dim,ftype,fM );
-    KLMaterial * klmat2 = new KLMaterial ( id,20.,2.,lz,dim,ftype,fM );
-    KLMaterial * klmat3 = new KLMaterial ( id,1.,1.,lz,dim,ftype,fM );
-
+    KLMaterial * klmat1 = new KLMaterial ( id,flx,fly,lz,dim,ftype,fM );
     cmesh1->SetDefaultOrder ( fporder );
-    cmesh2->SetDefaultOrder ( fporder );
-    cmesh3->SetDefaultOrder ( fporder );
     cmesh1->SetDimModel ( dim );
-    cmesh2->SetDimModel ( dim );
-    cmesh3->SetDimModel ( dim );
     cmesh1->InsertMaterialObject ( klmat1 );
-    cmesh2->InsertMaterialObject ( klmat2 );
-    cmesh3->InsertMaterialObject ( klmat3 );
     cmesh1->SetAllCreateFunctionsContinuous();
-    cmesh2->SetAllCreateFunctionsContinuous();
-    cmesh3->SetAllCreateFunctionsContinuous();
     cmesh1->AutoBuild();
-    cmesh2->AutoBuild();
-    cmesh3->AutoBuild();
-    veccmesh[0]=cmesh1;
-    veccmesh[1]=cmesh2;
-    veccmesh[2]=cmesh3;
-    return veccmesh;
+
+    return cmesh1;
 }
 
-void FieldTools::ComputeField (  )
+void FieldTools::ComputeField ( REAL mean,REAL cov,int samples)
 {
 
+    KLAnalysis * klanal = new KLAnalysis ( fcmesh );
 
-    KLAnalysis * klanal = new KLAnalysis ( fcmesh[0] );
-
-    KLMaterial *mat = dynamic_cast<KLMaterial*> ( fcmesh[0]->MaterialVec() [1] );
+    KLMaterial *mat = dynamic_cast<KLMaterial*> ( fcmesh->MaterialVec() [1] );
 
     klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
 
     klanal->Solve();
 
-
-
     TPZFMatrix<REAL> eigenfunctions = klanal->Solution();
-    REAL mean=10.;
-    REAL cov=0.3;
-    int samples=1000;
-    string outdata = "coesao.txt";
-
-    TPZFMatrix<REAL> field = CreateLogNormalRandomField ( eigenfunctions, mean, cov, samples, outdata );
 
 
-    mean=30.*M_PI/180.;
-    cov=0.2;
-    string outdataatrito = "atrito.txt";
-    TPZFMatrix<REAL> fieldphi = CreateLogNormalRandomField ( eigenfunctions, mean, cov, samples, outdataatrito );
+    TPZFMatrix<REAL> field = CreateLogNormalRandomField ( eigenfunctions, mean, cov, samples, ffile );
 
-
-    mean=1.;
-    cov=0.2;
-    string outdataperm = "permeability.txt";
-    TPZFMatrix<REAL> fieldperm = CreateLogNormalRandomField ( eigenfunctions, mean, cov, samples, outdataperm );
-
-
-//     string file1 ="coesao3.vtk";
-//
-//     klanal->Post ( file1,2,0 );
 
 }
 
@@ -208,36 +174,24 @@ void FieldTools::PrintMat ( std::string out,TPZFMatrix<REAL> mat )
 }
 
 
-TPZManVector<TPZCompMesh *,3> FieldTools::SettingCreateFilds ( )
+TPZCompMesh * FieldTools::SettingCreateFild ( )
 {
-    string outco="/home/diogo/projects/pz-random-build-release/Projects/randomdarcy/coesao.txt";
+    cout << "outco = ?";
+    TPZCompMesh * cmesh = CreateCompMeshKL ( );
+    string outco="/home/diogo/projects/pz-random-build-release/Projects/stochasticslope/";
+    outco+=ffile;
+    cout << "outco = " << outco;
     TPZFMatrix<REAL> readco;
     ReadFile ( outco,readco );
-    fcmesh[0]->LoadSolution ( readco );
+    cmesh->LoadSolution ( readco );
 
-    TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( fcmesh[0] );
+    TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmesh );
     analysis1x->LoadSolution ( readco );
-
-
-    string outphi="/home/diogo/projects/pz-random-build-release/Projects/randomdarcy/atrito.txt";
-    TPZFMatrix<REAL> readphi;
-    ReadFile ( outphi,readphi );
-    fcmesh[1]->LoadSolution ( readphi );
-
-    TPZElastoPlasticAnalysis * analysis2x  = new TPZElastoPlasticAnalysis ( fcmesh[1] );
-    analysis2x->LoadSolution ( readphi );
-
-    string outperm="/home/diogo/projects/pz-random-build-release/Projects/randomdarcy/permeability.txt";
-    TPZFMatrix<REAL> readperm;
-    ReadFile ( outperm,readperm );
-    fcmesh[2]->LoadSolution ( readperm );
-
-    TPZElastoPlasticAnalysis * analysis3x  = new TPZElastoPlasticAnalysis ( fcmesh[2] );
-    analysis3x->LoadSolution ( readperm );
-
 
     return fcmesh;
 }
+
+
 
 void  FieldTools::ReadFile ( std::string file,TPZFMatrix<REAL> &out )
 {

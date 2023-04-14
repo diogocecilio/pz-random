@@ -594,7 +594,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
     REAL error = 1.e10,error2=1.e10;
     int numeq = fCompMesh->NEquations();
 
-    cout << "number of equations = " << numeq <<endl;
+ //   cout << "number of equations = " << numeq <<endl;
 
     TPZFMatrix<STATE> prevsol ( fSolution );
     if ( prevsol.Rows() != numeq ) prevsol.Redim ( numeq,1 );
@@ -619,7 +619,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
 // 	 fSolution=du;
     AssembleResidual();
     REAL normrhs0 = Norm ( fRhs );
-    cout << "normrhs0 = " << normrhs0 << endl;
+  //  cout << "normrhs0 = " << normrhs0 << endl;
     while ( a && b && c )
     {
 
@@ -685,7 +685,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
         this->AssembleResidual();
         //cout << "c  " << std::endl;
         REAL normf  = Norm ( fRhs );
-        cout << "Iteracao n : " << ( iter ) << " : normas |Delta(Un)| e |Delta(rhs)/rhs0| : " << normu << " / " << normf/normrhs0 << " | tol = "<<tol << endl;
+     //   cout << "Iteracao n : " << ( iter ) << " : normas |Delta(Un)| e |Delta(rhs)/rhs0| : " << normu << " / " << normf/normrhs0 << " | tol = "<<tol << endl;
         a = iter < numiter ;
         b =error2 > tol *1.e-3;
         c= error > tol;
@@ -699,7 +699,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
 //         }
         if ( ( iter >=numiter || ( iter>2 && normu >1 ) ) )
         {
-            cout << "\nDivergent Method\n";
+            //cout << "\nDivergent Method\n";
             return false;
         }
         error = normf;
@@ -709,6 +709,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
 
     }
     iters=iter;
+   // cout << "Iteracao n : " << ( iter ) << "Norm ( prevsol ) = "<<Norm ( prevsol ) << "Norm ( fRhs ) = "<<Norm ( fRhs ) << endl;
     return true;
 }
 
