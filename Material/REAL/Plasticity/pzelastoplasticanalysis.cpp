@@ -315,8 +315,8 @@ void TPZElastoPlasticAnalysis::UpdatePrecond()
 void TPZElastoPlasticAnalysis::SetBiCGStab ( int numiter, REAL tol )
 {
 
-    //TPZSpStructMatrix StrMatrix(Mesh());
-    TPZSkylineStructMatrix StrMatrix ( Mesh() );
+    TPZSpStructMatrix StrMatrix(Mesh());
+    //TPZSkylineStructMatrix StrMatrix ( Mesh() );
     StrMatrix.SetNumThreads ( 12 );
     this->SetStructuralMatrix ( StrMatrix );
     TPZMatrix<REAL> * mat = StrMatrix.Create();
@@ -578,7 +578,7 @@ void TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
         this->AssembleResidual();
         REAL norm = Norm ( fRhs );
 
-        cout << "Iteracao n : " << ( iter+1 ) << " : normas |Delta(Un)| e |Delta(rhs)| : " << normDeltaSol << " / " << norm << endl;
+        //cout << "Iteracao n : " << ( iter+1 ) << " : normas |Delta(Un)| e |Delta(rhs)| : " << normDeltaSol << " / " << norm << endl;
 
         error = norm;
         iter++;
@@ -618,6 +618,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
 // 	//cout << "| total time taken to solve eigen=  " << time_span.count()<< std::endl;
 // 	 fSolution=du;
     AssembleResidual();
+  //  std::cout << "asdasdsad " <<std::endl;
     REAL normrhs0 = Norm ( fRhs );
   //  cout << "normrhs0 = " << normrhs0 << endl;
     while ( a && b && c )
@@ -631,12 +632,12 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
         if ( false )
         {
             Eigen::initParallel();
-            int n=5;
+            int n=10;
             //omp_set_num_threads(n);
             setNbThreads ( n );
             //ConjugateGradient = 2 //BiCGSTAB =5
             int type=0;
-            type = 5;
+            type = 1;
             TPZAutoPointer<TPZMatrix<REAL> > K = this->fSolver->Matrix();
             TPZFMatrix<STATE> rhs =fRhs;
             TPZFMatrix<STATE> du;
@@ -646,7 +647,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
             fSolution=du;
             auto end = sc.now();
             auto time_span = static_cast<chrono::duration<double>> ( end - start );
-            cout << "| total time taken to solve eigen=  " << time_span.count() << std::endl;
+           // cout << "| total time taken to solve eigen=  " << time_span.count() << std::endl;
         }
         else
         {
@@ -655,7 +656,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
             //cout <<  "aaaaaaaaaa" << endl;
             auto end = sc.now();
             auto time_span = static_cast<chrono::duration<double>> ( end - start );
-            //cout << "| total time taken to solve PZ=  " << time_span.count()<< std::endl;
+         //   cout << "| total time taken to solve PZ=  " << time_span.count()<< std::endl;
         }
 
 

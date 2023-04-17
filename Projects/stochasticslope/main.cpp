@@ -58,13 +58,18 @@ TPZGeoMesh * CreateRefMesh();
 
 int main()
 {
+    chrono::steady_clock sc;
+    auto start = sc.now();
 
+    MonteCarloShearRed ( 0,1 );
 
-    //SolveP();
+    auto end = sc.now();
+    auto time_span = static_cast<chrono::duration<double>> ( end - start );
+    cout << " | total time in iterative process =  " << time_span.count() << std::endl;
 
-   // MonteCarloShearRed ( 0,1000 );
-    SolveMultiThread(0,1000,10);
-
+    //MonteCarloShearRed ( 0,500 );
+   // MonteCarloShearRed ( 500,1000 );
+  //  SolveMultiThread(0,1000,10);
     // SolveDeterministic();
     return 0;
 }
@@ -83,14 +88,6 @@ void SolveMultiThread ( int a0,int b0,int nthreads )
         std::cout << "a = "<< a <<std::endl;
         std::cout << "b = "<< b <<std::endl;
 
-        string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
-        int porder=1;
-        int ref=2;
-        bool createfield=false;
-
-        TPZGeoMesh *gmesh1 = CreateGMesh ( ref,file );
-        TPZGeoMesh *gmesh2 = CreateGMesh ( ref,file );
-
         std::thread threadx ( MonteCarloShearRed,a,b );
 
         threadsmat1.push_back ( std::move ( threadx ) );
@@ -101,84 +98,15 @@ void SolveMultiThread ( int a0,int b0,int nthreads )
 
     for ( auto &threadx: threadsmat1 ) threadx.join();
 }
-void SolveDeterministic()
-{
-    int ref=1;
-    int porder=1;
-    //string file ="/home/diogo/projects/pz-random/data/tri-struc2x1.msh";//2:1
-    //string file ="/home/diogo/projects/pz-random/data/tri.msh";//2:1
-    string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";//1:1
 
-    TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,2,file );
-    TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfields1 = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfields2 = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfields3 = CreateGMesh ( ref,file );
-
-    TPZManVector<TPZGeoMesh*,3> gmeshvec ( 3 );
-    gmeshvec[0]=gmeshfields1;
-    gmeshvec[1]=gmeshfields2;
-    gmeshvec[2]=gmeshfields3;
-
-    REAL gammaagua=10.;
-    REAL gammasolo=20.;
-    REAL coes=10.;
-    REAL phi=30.;
-    REAL E=20000.;
-    REAL nu =0.49;
-    int numthreads=10;
-
-    REAL H=10;
-    REAL Hw=10.;
-    REAL Ht=40.;
-
-
-    PlasticityTools plastictools ( gmeshpalstic,E, nu, coes,phi,gammaagua*0,gammasolo,numthreads,porder );
-
-    string vtkd="darcydeter.vtk";
-
-    DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder+1 );
-    darcytools.SolveDarcyProlem();
-    //darcytools.SetFlux ( plastictools.fcmesh );
-    darcytools.PostDarcy ( vtkd );
-
-    REAL tolfs =0.01;
-    int numiterfs =20;
-    REAL tolres = 1.e-6;
-    int numiterres =20;
-    REAL l =0.2;
-    REAL lambda0=0.61;
-
-    // REAL fs = plastictools.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
-
-    for ( int iref=0; iref<2; iref++ )
-    {
-        std::set<long> elindices;
-        REAL fs = plastictools.ShearRed();
-        plastictools.ComputeElementDeformation();
-        plastictools.DivideElementsAbove ( 0.005,elindices );
-        plastictools.ComputeElementDeformation();
-    }
-
-    std::ofstream files ( "printrefmesh.vtk" );
-    TPZVTKGeoMesh::PrintGMeshVTK ( plastictools.fcmesh->Reference(),files,false );
-
-    //TPZGeoMesh
-    PlasticityTools plastictools2 ( plastictools.fcmesh->Reference(),E, nu, coes,phi,gammaagua*0,gammasolo,numthreads,porder+1 );
-    darcytools.SetFlux ( plastictools2.fcmesh );
-    plastictools2.ShearRed();
-    //REAL fs = plastictools.GravityIncrease();
-    string vtkp="plasticdeter.vtk";
-    plastictools2.PostPlasticity ( vtkp );
-
-}
 
 void MonteCarloShearRed ( int a,int b )
 {
     int ref=2;
     int ref2=2;
-    int porder=1;
+    int porder=2;
     int porderfield=1;
+    int nref=2;
 
     string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";
 
@@ -194,7 +122,7 @@ void MonteCarloShearRed ( int a,int b )
     REAL phi=30.*M_PI/180.;
     REAL E=20000.;
     REAL nu =0.49;
-    int numthreads=15;
+    int numthreads=10;
 
     REAL H=10;
     REAL Hw=10.;
@@ -204,21 +132,21 @@ void MonteCarloShearRed ( int a,int b )
     int samples =1000;
     REAL lx=20.;
     REAL ly=2.;
-    int M=50;
+    int M=100;
     int type=3;
     string coesfile="coesao.txt";
     FieldTools fieldscoes ( gmeshfields1,lx, ly, M, type, porderfield,coesfile );
 
     lx=20.;
     ly=2.;
-    M=50;
+    M=100;
     type=3;
     string phifile="atrito.txt";
     FieldTools fieldphi ( gmeshfields2,lx, ly, M, type, porderfield,phifile );
 
     lx=20.;
     ly=20.;
-    M=50;
+    M=100;
     type=4;
     string permfile="permeability.txt";
     FieldTools fieldpermeability ( gmeshfields3,lx, ly, M, type, porderfield,permfile );
@@ -274,43 +202,109 @@ void MonteCarloShearRed ( int a,int b )
         std::cout << "imc = " <<  imc << std::endl;
 
 
-        PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+
 
         int iref;
-        for ( iref=0; iref<2; iref++ )
+        for ( iref=1; iref<=nref; iref++ )
         {
 
+            PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porderfield );
             std::set<long> elindices;
             REAL fsdummy = plastictoolstemp.ShearRed ( vecmesh,imc );
             plastictoolstemp.ComputeElementDeformation();
-            plastictoolstemp.PRefineElementsAbove ( 0.0015,porder+iref,elindices );
+            //plastictoolstemp.PRefineElementsAbove ( 0.0015,porder+iref,elindices );
             plastictoolstemp.DivideElementsAbove ( 0.0015,elindices );
             gmeshpalstic=plastictoolstemp.fcmesh->Reference();
 
         }
 
-        DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder+iref);
+        DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder+iref );
         darcytools.TransferSolutionFrom ( vecmesh,imc );
         darcytools.SolveDarcyProlem();
         darcytools.PostDarcy ( vtk2 );
         cout << "end refining, solving..."<<endl;
 
-        string meshref = "printrefmesh";
+        string meshref = "post/printrefmesh";
         meshref+=var;
         meshref+=".vtk";
         std::ofstream files ( meshref );
-        TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,false );
+        TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
 
-   //     darcytools.SetFlux ( plastictoolstemp.fcmesh );
-        plastictoolstemp.TransferSolutionFrom ( vecmesh,imc );
+        PlasticityTools plastictools ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+        darcytools.SetFlux ( plastictools.fcmesh );
+        plastictools.TransferSolutionFrom ( vecmesh,imc );
 
-        REAL fs = plastictoolstemp.ShearRed ( vecmesh,imc );
+        REAL fs = plastictools.ShearRed ( vecmesh,imc );
 
-        plastictoolstemp.PostPlasticity ( vtk1 );
+        plastictools.PostPlasticity ( vtk1 );
         out << fs << std::endl;
     }
 }
+void SolveDeterministic()
+{
+    int ref=1;
+    int porder=2;
+    string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";//1:1
+    // string file ="/home/diogo/projects/pz-random/data/n804e1531.msh";
 
+    TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,2,file );
+
+    REAL gammaagua=0.;
+    REAL gammasolo=20.;
+    REAL coes=10.;
+    REAL phi=30.*M_PI/180.;
+    REAL E=20000.;
+    REAL nu =0.49;
+    int numthreads=10;
+
+    REAL tolfs =0.01;
+    int numiterfs =20;
+    REAL tolres = 1.e-6;
+    int numiterres =20;
+    REAL l =0.2;
+    REAL lambda0=0.61;
+
+
+//PlasticityTools(TPZGeoMesh * gmesh,REAL E,REAL nu, REAL coes, REAL phi,REAL gammaagua, REAL gammasolo,int  numthreads,int porder);
+
+
+
+    PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+    int iref;
+
+    std::set<long> elindices2;
+    for ( iref=0; iref<3; iref++ )
+    {
+
+        cout << "refinando " << iref << endl;
+        std::set<long> elindices;
+        REAL fsdummy = plastictoolstemp.ShearRed ( );
+        plastictoolstemp.ComputeElementDeformation();
+        plastictoolstemp.PRefineElementsAbove ( 0.0015,porder+iref,elindices );
+        plastictoolstemp.DivideElementsAbove ( 0.0015,elindices );
+        gmeshpalstic=plastictoolstemp.fcmesh->Reference();
+        // elindices2=elindices;
+
+    }
+
+    // plastictoolstemp.ApplyHistory();
+    // cout << "saindo do refinando e resolvendo na maalha fina.. " << iref << endl;
+    //  PlasticityTools plastictoolstemp2 ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder+1 );
+
+    // plastictoolstemp.SetCP(coes,phi);
+    REAL fsdummy = plastictoolstemp.ShearRed ( );
+    string meshref = "malharefinada.vtk";
+    std::ofstream files ( meshref );
+    TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
+
+
+    string vtk1 = "printdeterr.vtk";
+    plastictoolstemp.PostPlasticity ( vtk1 );
+
+
+
+
+}
 // void MonteCarlo ( int a,int b )
 // {
 //     int ref=2;
@@ -562,7 +556,7 @@ TPZGeoMesh * CreateGMeshRef ( int ref,int ref2,string file )
     }
 
     std::ofstream files ( "teste-meshref.vtk" );
-    TPZVTKGeoMesh::PrintGMeshVTK ( gmesh,files,false );
+    TPZVTKGeoMesh::PrintGMeshVTK ( gmesh,files,true );
     cout << "d" << endl;
     return gmesh;
 

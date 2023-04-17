@@ -103,6 +103,7 @@ public:
 	void SetBiCGStab(int numiter, REAL tol);
 	
 	void SetBiCGStab_Jacobi(int numiter, REAL tol);
+
 	
 	void SetLU();
 	

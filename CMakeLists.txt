@@ -4,6 +4,7 @@ cmake_minimum_required (VERSION 2.8.0)
 
 project (PZ)
 include_directories("/usr/include/eigen3")
+include_directories("/usr/include")
 #Specify where the headers files must be finded
 include_directories(
 	"${PROJECT_SOURCE_DIR}/Python"

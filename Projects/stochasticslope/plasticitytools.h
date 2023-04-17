@@ -86,7 +86,13 @@ public:
 
     void ResetMem();
 
-    void ApplyHistory(std::set<long> &elindices);
+    void ApplyHistory();
+
+    void SetCP(REAL c, REAL p)
+    {
+        fc=c;
+        fphi=p;
+    }
 };
 
 PlasticityTools::PlasticityTools()
@@ -385,134 +391,38 @@ void PlasticityTools::LoadingRamp (  REAL factor )
 
 }
 
-void Forcing2(const TPZVec<REAL> &pt, TPZVec<STATE> &disp)
-{
-		const auto &x=pt[0];
-        const auto &y=pt[1];
-        const auto &z=pt[2];
-        REAL yy=40-y;
-        REAL hw=0.;
-        REAL H = 10.;
-        REAL gammaaugua=-10*9.81/1000.;
-        //REAL gammaaugua=0.001;
-
-        if(yy<hw && yy<H)
-        {
-            disp[0]  =   gammaaugua * yy ;
-        }
-        else
-        {
-            disp[0]  = hw*gammaaugua;
-        }
-}
-TPZCompMesh * PlasticityTools::CreateCompMeshPressure ( TPZGeoMesh * gmesh,int porder )
-{
-    unsigned int dim  = 2;
-    const std::string name ( "ElastoPlastic COMP MESH Footing Problem " );
-
-    TPZCompMesh * cmesh =  new TPZCompMesh ( gmesh );
-    cmesh->SetName ( name );
-    cmesh->SetDefaultOrder ( porder );
-    cmesh->SetDimModel ( dim );
-
-    // Mohr Coulomb data
-    REAL mc_cohesion    = fc;//kpa
-    REAL mc_phi         = fphi*M_PI/180.;
-    REAL mc_psi         = mc_phi;
-
-    /// ElastoPlastic Material using Mohr Coulomb
-    // Elastic predictor
-    TPZElasticResponse ER;
-    REAL nu = fnu;
-    REAL E = fE;
-
-    LEMC plasticstep;
-    //TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> LEMC;
-    //TPZPlasticStepVoigt<TPZMohrCoulombVoigt, TPZElasticResponse> LEMC;
-    ER.SetUp ( E, nu );
-    plasticstep.fER =ER;
-    // LEMC.SetElasticResponse( ER );
-    plasticstep.fYC.SetUp ( mc_phi, mc_psi, mc_cohesion, ER );
-
-    int PlaneStrain = 1;
-
-    plasticmat * material = new plasticmat ( 1,PlaneStrain );
-    //plasticmatcrisfield * material = new plasticmatcrisfield ( 1,PlaneStrain );
-    material->SetPlasticity ( plasticstep );
-
-    material->SetId ( 1 );
-
-    material->SetLoadFactor ( 1. );
-    material->SetWhichLoadVector ( 0 ); //option to compute the total internal force vecor fi=(Bt sigma+ N (b+gradu))
-
-    cmesh->InsertMaterialObject ( material );
-
-    TPZAutoPointer<TPZFunction<STATE> > pressure = new TPZDummyFunction<STATE>(Forcing2);
-
-    TPZFMatrix<STATE> val1 ( 2,2,0. );
-    TPZFMatrix<STATE>  val2 ( 2,1,0. );
-    int directionadirichlet =3;
-    int newman =1;
-    val2 ( 0,0 ) = 1;
-    val2 ( 1,0 ) = 1;
-    auto * bc_bottom = material->CreateBC ( material, -1,directionadirichlet, val1, val2 );//bottom
-    val2 ( 0,0 ) = 1;
-    val2 ( 1,0 ) = 0;
-    auto * bc_rigth = material->CreateBC ( material, -2, directionadirichlet, val1, val2 );//rigth
-    val2 ( 0,0 ) = 1;
-    val2 ( 1,0 ) = 0;
-    auto * bc_left = material->CreateBC ( material, -5, directionadirichlet, val1, val2 );//left
-
-    val2 ( 0,0 ) = 0;
-    val2 ( 1,0 ) = 0;
-    TPZMaterial * bc_topr = material->CreateBC ( material, -3,newman, val1, val2 );//top rigth
-    bc_topr->SetForcingFunction(pressure);
-    val2 ( 0,0 ) = 0;
-    val2 ( 1,0 ) = 0;
-    TPZMaterial * bc_topl = material->CreateBC ( material, -4, newman, val1, val2 );//top left
-    bc_topl->SetForcingFunction(pressure);
-    val2 ( 0,0 ) = 0;
-    val2 ( 1,0 ) = 0;
-    TPZMaterial * bc_ramp = material->CreateBC ( material, -6, newman, val1, val2 );//ramp
-    bc_ramp->SetForcingFunction(pressure);
-
-
-    cmesh->InsertMaterialObject ( bc_bottom );
-    cmesh->InsertMaterialObject ( bc_rigth );
-    cmesh->InsertMaterialObject ( bc_left );
-    cmesh->InsertMaterialObject ( bc_topr );
-    cmesh->InsertMaterialObject ( bc_topl );
-    cmesh->InsertMaterialObject ( bc_ramp );
-
-
-    //cmesh->InsertMaterialObject ( top );
-    cmesh->SetAllCreateFunctionsContinuousWithMem();
-
-    cmesh->AutoBuild();
-
-    return cmesh;
-
-
-
-}
 
 TPZElastoPlasticAnalysis * PlasticityTools::CreateAnalysis (  )
 {
 
     TPZElastoPlasticAnalysis * analysis =  new TPZElastoPlasticAnalysis ( fcmesh ); // Create analysis
 
+ //   analysis->SetBiCGStab(10,1.e-6);
+
     TPZSkylineStructMatrix matskl ( fcmesh );
     //TPZFStructMatrix matskl ( cmesh );
 
     matskl.SetNumThreads ( fnumthreads );
 
-    analysis->SetStructuralMatrix ( matskl );
+  //  analysis->SetStructuralMatrix ( matskl );
 
     ///Setting a direct solver
     TPZStepSolver<STATE> step;
     step.SetDirect ( ELDLt );
     //step.SetDirect ( ECholesky );
+
+
+
+    long neq = fcmesh->NEquations();
+    TPZVec<long> activeEquations;
+    analysis->GetActiveEquations(activeEquations);
+    TPZEquationFilter filter(neq);
+    filter.SetActiveEquations(activeEquations);
+    matskl.EquationFilter() = filter;
+    analysis->SetStructuralMatrix(matskl);
+
     analysis->SetSolver ( step );
+
 
     return analysis;
 
@@ -608,12 +518,11 @@ void PlasticityTools::ResetMem()
 REAL PlasticityTools::ShearRed ( )
 {
 
+    //fgmesh->ResetReference();
+   // fcmesh->LoadReferences();
+    LoadingRamp(1.);
 
-  //  fcmesh->Solution().Redim(fneq, 1);
-
-    LoadingRamp(0.5);
-
-    REAL FS=1,FSmax=5.,FSmin=0.,tol=0.01;
+    REAL FS=0.8,FSmax=5.,FSmin=0.,tol=0.001;
     int neq = fcmesh->NEquations();
 
     TPZFMatrix<REAL> displace(neq,1),displace0(neq,1);
@@ -629,8 +538,8 @@ REAL PlasticityTools::ShearRed ( )
     bool conv=false;
     do {
 
-        //fcmesh->Solution().Zero();
-        //std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
+        fcmesh->Solution().Zero();
+       // std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
         TPZElastoPlasticAnalysis  * anal = CreateAnalysis();
 
         REAL norm = 1000.;
@@ -649,10 +558,13 @@ REAL PlasticityTools::ShearRed ( )
         norm = Norm ( anal->Rhs() );
 
 
+        //anal->AcceptSolution();
+
+
         auto end = sc.now();
         auto time_span = static_cast<chrono::duration<double>> ( end - start );
 
-        std::cout << "FS "<< FS <<  "| step = " << counterout  <<" | Rhs norm = " << norm  << " | IterativeProcess Time: " << time_span.count() << " seconds !!! " <<std::endl;
+        std::cout << "FS "<< FS <<  "| step = " << counterout <<" | Rhs norm = " << norm  << " | IterativeProcess Time: " << time_span.count() << " seconds !!! " <<std::endl;
 
         if ( conv==false ) {
 
@@ -672,16 +584,16 @@ REAL PlasticityTools::ShearRed ( )
         counterout++;
         if(( FSmax - FSmin ) / FS < tol)anal->AcceptSolution();
     }  while ( ( FSmax - FSmin ) / FS > tol || conv==false);
-    return FS;
+
+        return ( FSmax + FSmin )/2;
 }
 
-REAL PlasticityTools::ShearRed ( TPZManVector<TPZCompMesh*,3> vecmesh,int imc)
+REAL PlasticityTools::ShearRed (TPZManVector<TPZCompMesh*,3> vecmesh,int imc )
 {
 
+    LoadingRamp(1.);
 
-    LoadingRamp(0.5);
-
-    REAL FS=0.5,FSmax=50.,FSmin=0.,tol=0.01;
+    REAL FS=0.8,FSmax=5.,FSmin=0.,tol=0.001;
     int neq = fcmesh->NEquations();
 
     TPZFMatrix<REAL> displace(neq,1),displace0(neq,1);
@@ -697,12 +609,11 @@ REAL PlasticityTools::ShearRed ( TPZManVector<TPZCompMesh*,3> vecmesh,int imc)
     bool conv=false;
     do {
 
-        TransferSolutionFromShearRed (  vecmesh,imc, FS );
-
-        //fcmesh->Solution().Zero();
-        //std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
+        fcmesh->Solution().Zero();
+       // std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
         TPZElastoPlasticAnalysis  * anal = CreateAnalysis();
 
+        TransferSolutionFromShearRed (  vecmesh,imc, FS );
         REAL norm = 1000.;
         REAL tol2 = 0.01;
         int NumIter = 50;
@@ -719,10 +630,13 @@ REAL PlasticityTools::ShearRed ( TPZManVector<TPZCompMesh*,3> vecmesh,int imc)
         norm = Norm ( anal->Rhs() );
 
 
+        //anal->AcceptSolution();
+
+
         auto end = sc.now();
         auto time_span = static_cast<chrono::duration<double>> ( end - start );
 
-        std::cout << "FS "<< FS <<  "| step = " << counterout  <<" | Rhs norm = " << norm  << " | IterativeProcess Time: " << time_span.count() << " seconds !!! " <<std::endl;
+        std::cout << "FS "<< FS <<  "| step = " << counterout <<" | Rhs norm = " << norm  << " | IterativeProcess Time: " << time_span.count() << " seconds !!! " <<std::endl;
 
         if ( conv==false ) {
 
@@ -734,15 +648,11 @@ REAL PlasticityTools::ShearRed ( TPZManVector<TPZCompMesh*,3> vecmesh,int imc)
 			FS = 1. / ( ( 1. / FSmin + 1. / FSmax ) / 2. );
         }
 
-        c=cohesion0/FS;
-        phi=atan ( tan ( phi0 ) /FS );
-        psi=phi;
-        LEMC.fYC.SetUp ( phi, psi, c, ER );
-        material->SetPlasticity ( LEMC );
         counterout++;
         if(( FSmax - FSmin ) / FS < tol)anal->AcceptSolution();
     }  while ( ( FSmax - FSmin ) / FS > tol || conv==false);
-    return FS;
+
+        return ( FSmax + FSmin )/2;
 }
 
 void PlasticityTools::PostPlasticity(string vtkd)
@@ -1219,18 +1129,30 @@ void PlasticityTools::TransferSolutionFromShearRed ( TPZManVector<TPZCompMesh*,3
 
 }
 
-void PlasticityTools::ApplyHistory(std::set<long> &elindices)
+
+void PlasticityTools::ApplyHistory()
 {
+    TPZMatWithMem<TPZElastoPlasticMem> *pMatWithMem2 = dynamic_cast<TPZMatWithMem<TPZElastoPlasticMem> *> ( fcmesh->MaterialVec() [1] );
+    int nels =  fcmesh->NElements();
 
+    for ( int iel=0; iel<nels; iel++ )
+    {
 
-    std::set<long>::iterator it;
-    for (it=elindices.begin(); it != elindices.end(); it++) {
-        long elindex = *it;
-        TPZCompEl *cel = fcmesh->ElementVec()[elindex];
-        TPZMatWithMem<TPZElastoPlasticMem> *pMatWithMem2 = dynamic_cast<TPZMatWithMem<TPZElastoPlasticMem> *> (cel->Material());
-        if (!pMatWithMem2) {
-            DebugStop();
+        TPZCompEl *cel = fcmesh->ElementVec() [iel];
+        if ( !cel )
+        {
+            continue;
         }
+        TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
+        if ( !intel )
+        {
+            continue;
+        }
+        if ( intel->Material() != pMatWithMem2 )
+        {
+            continue;
+        }
+
         // Reset the memory of the integration points of the element
         TPZManVector<long> pointindices;
         cel->GetMemoryIndices(pointindices);
@@ -1240,7 +1162,34 @@ void PlasticityTools::ApplyHistory(std::set<long> &elindices)
             pMatWithMem2->ResetMemItem(ind);
         }
 
-        //ApplyDeformation(cel);
+        }
+        pMatWithMem2->SetUpdateMem ( false );
 
-    }
 }
+
+// void PlasticityTools::ApplyHistory()
+// {
+//
+//
+//
+//     std::set<long>::iterator it;
+//     for (it=elindices.begin(); it != elindices.end(); it++) {
+//         long elindex = *it;
+//         TPZCompEl *cel = fcmesh->ElementVec()[elindex];
+//         TPZMatWithMem<TPZElastoPlasticMem> *pMatWithMem2 = dynamic_cast<TPZMatWithMem<TPZElastoPlasticMem> *> (cel->Material());
+//         if (!pMatWithMem2) {
+//             DebugStop();
+//         }
+//         // Reset the memory of the integration points of the element
+//         TPZManVector<long> pointindices;
+//         cel->GetMemoryIndices(pointindices);
+//         long npoints = pointindices.size();
+//         for (long ip = 0; ip<npoints; ip++) {
+//             long ind = pointindices[ip];
+//             pMatWithMem2->ResetMemItem(ind);
+//         }
+//
+//
+//
+//     }
+// }
