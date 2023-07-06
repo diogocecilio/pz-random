@@ -853,7 +853,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
         {
             if ( l<1.e-3 ||normdu>1.e7)
             {
-                cout << "FAIL  l= "<< l <<  " normdu =  " << normdu <<endl;
+                cout << "  l= "<< l <<  " normdu =  " << normdu <<endl;
                 converge =false;
                 return 0;
             }
@@ -904,7 +904,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
     while ( counterout<numiter && diff>tol );
 
     AcceptSolution();
-    cout << "lambda = "<<lambda << endl;
+    cout << " final safety factor = "<<lambda << endl;
 
     converge =true;
     return lambda;

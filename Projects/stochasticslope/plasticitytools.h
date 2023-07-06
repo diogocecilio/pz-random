@@ -33,6 +33,7 @@ protected:
     REAL fphi;
     int fporder;
     REAL fntimes=2.5;
+    bool print;
 
 
     TPZVec<REAL> fPlasticDeformSqJ2;
@@ -87,6 +88,11 @@ public:
     void ResetMem();
 
     void ApplyHistory();
+
+    void SetPrint(bool set)
+    {
+        print=set;
+    }
 
     void SetCP(REAL c, REAL p)
     {
@@ -434,10 +440,11 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
   //  fcmesh->Solution().Redim(fneq, 1);
     TPZElastoPlasticAnalysis * analysis = CreateAnalysis (  );
     bool converge;
+    cout << "Solving incremental plasticity with Arc-length method..."<<endl;
     REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     if ( converge==false )
     {
-        cout << "calling gravity increase"<<endl;
+        cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;
         fs = GravityIncrease (  );
     }
     return fs;
@@ -463,7 +470,7 @@ REAL PlasticityTools::GravityIncrease (  )
     do
     {
 
-        std::cout << "FS = " << FS  <<" | Load step = " << counterout << " | Rhs norm = " << norm  << std::endl;
+        std::cout << "safety factor = " << FS  <<" | Load step = " << counterout << " | Rhs norm = " << norm  << std::endl;
         LoadingRamp ( FS );
         //SetSuportPressure(cmesh,FS);
 
@@ -475,7 +482,7 @@ REAL PlasticityTools::GravityIncrease (  )
         //bool conv =anal->IterativeProcess(cout, tol2, NumIter,linesearch,checkconv);
         auto end = sc.now();
         auto time_span = static_cast<chrono::duration<double>> ( end - start );
-        cout << "| total time in iterative process =  " << time_span.count() << std::endl;
+        //cout << "| total time in iterative process =  " << time_span.count() << std::endl;
         //anal->IterativeProcess ( outnewton, tol2, NumIter);
 
         norm = Norm ( anal->Rhs() );
@@ -564,7 +571,7 @@ REAL PlasticityTools::ShearRed ( )
         auto end = sc.now();
         auto time_span = static_cast<chrono::duration<double>> ( end - start );
 
-        std::cout << "FS "<< FS <<  "| step = " << counterout <<" | Rhs norm = " << norm  << " | IterativeProcess Time: " << time_span.count() << " seconds !!! " <<std::endl;
+        std::cout << "safety factor "<< FS <<  "| step = " << counterout <<" | Rhs norm = " << norm  << " | IterativeProcess Time: " << time_span.count() << " seconds !!! " <<std::endl;
 
         if ( conv==false ) {
 
@@ -585,6 +592,7 @@ REAL PlasticityTools::ShearRed ( )
         if(( FSmax - FSmin ) / FS < tol)anal->AcceptSolution();
     }  while ( ( FSmax - FSmin ) / FS > tol || conv==false);
 
+        std::cout << "final safety factor "<< FS <<std::endl;
         return ( FSmax + FSmin )/2;
 }
 

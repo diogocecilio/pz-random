@@ -53,24 +53,28 @@ void SolveDeterministic();
 void MonteCarlo ( int a,int b );
 void MonteCarloShearRed ( int a,int b );
 void SolveMultiThread ( int a0,int b0,int nthreads );
+void SolveDeterministic(bool gimsrm);
 
 TPZGeoMesh * CreateRefMesh();
 
 int main()
 {
-    chrono::steady_clock sc;
-    auto start = sc.now();
+  //  chrono::steady_clock sc;
+  //  auto start = sc.now();
 
-    MonteCarloShearRed ( 0,1 );
+   // MonteCarloShearRed ( 0,1000 );
 
-    auto end = sc.now();
-    auto time_span = static_cast<chrono::duration<double>> ( end - start );
-    cout << " | total time in iterative process =  " << time_span.count() << std::endl;
+  //  auto end = sc.now();
+ //   auto time_span = static_cast<chrono::duration<double>> ( end - start );
+ //   cout << " | total time in iterative process =  " << time_span.count() << std::endl;
 
     //MonteCarloShearRed ( 0,500 );
    // MonteCarloShearRed ( 500,1000 );
-  //  SolveMultiThread(0,1000,10);
+    //SolveMultiThread(100,200,2);
     // SolveDeterministic();
+    int srm=1;
+    int gim=0;
+    SolveDeterministic(srm);
     return 0;
 }
 
@@ -218,10 +222,10 @@ void MonteCarloShearRed ( int a,int b )
 
         }
 
-        DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder+iref );
-        darcytools.TransferSolutionFrom ( vecmesh,imc );
-        darcytools.SolveDarcyProlem();
-        darcytools.PostDarcy ( vtk2 );
+       // DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder+iref );
+       // darcytools.TransferSolutionFrom ( vecmesh,imc );
+       // darcytools.SolveDarcyProlem();
+       // darcytools.PostDarcy ( vtk2 );
         cout << "end refining, solving..."<<endl;
 
         string meshref = "post/printrefmesh";
@@ -231,7 +235,7 @@ void MonteCarloShearRed ( int a,int b )
         TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
 
         PlasticityTools plastictools ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
-        darcytools.SetFlux ( plastictools.fcmesh );
+        //darcytools.SetFlux ( plastictools.fcmesh );
         plastictools.TransferSolutionFrom ( vecmesh,imc );
 
         REAL fs = plastictools.ShearRed ( vecmesh,imc );
@@ -240,6 +244,95 @@ void MonteCarloShearRed ( int a,int b )
         out << fs << std::endl;
     }
 }
+
+void SolveDeterministic(bool gimsrm)
+{
+    int ref=1;
+    int porder=2;
+    string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";//1:1
+    // string file ="/home/diogo/projects/pz-random/data/n804e1531.msh";
+
+    TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,2,file );
+
+//     REAL gammaagua=0.;
+//     REAL gammasolo=20.;
+//     REAL coes=50.;
+//     REAL phi=20.*M_PI/180.;
+//     REAL E=20000.;
+//     REAL nu =0.49;
+//     int numthreads=10;
+
+    REAL gammaagua=0.;
+    REAL gammasolo=20.;
+    REAL coes=10.;
+    REAL phi=30.*M_PI/180.;
+    REAL E=20000.;
+    REAL nu =0.49;
+    int numthreads=10;
+
+    REAL tolfs =0.01;
+    int numiterfs =20;
+    REAL tolres = 1.e-6;
+    int numiterres =20;
+    REAL l =0.2;
+    REAL lambda0=0.61;
+
+//
+//         REAL fs = plastictools.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+
+//PlasticityTools(TPZGeoMesh * gmesh,REAL E,REAL nu, REAL coes, REAL phi,REAL gammaagua, REAL gammasolo,int  numthreads,int porder);
+
+
+
+    PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+    int iref;
+
+    cout << "Iniciando o refinamento da malha... " << iref << endl;
+    std::set<long> elindices2;
+    for ( iref=0; iref<3; iref++ )
+    {
+        std::set<long> elindices;
+       // REAL fsdummy = plastictoolstemp.ShearRed ( );
+        REAL fsdummy = plastictoolstemp.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+        plastictoolstemp.ComputeElementDeformation();
+        //plastictoolstemp.PRefineElementsAbove ( 0.0015,porder+iref,elindices );
+        plastictoolstemp.DivideElementsAbove ( 0.0015,elindices );
+        gmeshpalstic=plastictoolstemp.fcmesh->Reference();
+        // elindices2=elindices;
+
+    }
+
+      cout << "Fim do refinamento da malha"<< endl;
+
+      PlasticityTools plastictoolstemp2 ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder+1 );
+
+      if(gimsrm)
+      {
+          cout << "Saindo do refinando e resolvendo na malha fina com o metodo da reducao da resistencia.. " << endl;
+          REAL fsdummy = plastictoolstemp2.ShearRed ( );
+      }
+      else
+      {
+          cout << "Saindo do refinando e resolvendo na malha fina com o metodo da plasticidade incremental com o Arc-Length.. " << endl;
+          REAL fsdummy = plastictoolstemp2.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+      }
+
+
+    cout << "pos-processando.. " << iref << endl;
+    string meshref = "malharefinada.vtk";
+    std::ofstream files ( meshref );
+    TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
+
+
+    string vtk1 = "printdeterr.vtk";
+    plastictoolstemp2.PostPlasticity ( vtk1 );
+
+
+
+
+}
+
+
 void SolveDeterministic()
 {
     int ref=1;
