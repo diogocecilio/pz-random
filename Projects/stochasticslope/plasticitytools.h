@@ -391,6 +391,7 @@ void PlasticityTools::LoadingRamp (  REAL factor )
     //plasticmatcrisfield * body= dynamic_cast<plasticmatcrisfield *> ( cmesh->FindMaterial ( 1 ) );
     TPZManVector<REAL, 3> force ( 3,0. );
     force[1]= ( fgammaagua-fgammasolo );
+
     //force[1]=(-gammasolo);
     body->SetLoadFactor ( factor );
     body->SetBodyForce ( force );
@@ -584,6 +585,7 @@ REAL PlasticityTools::ShearRed ( )
         }
 
         c=cohesion0/FS;
+        std::cout << "coes "<<  c <<std::endl;
         phi=atan ( tan ( phi0 ) /FS );
         psi=phi;
         LEMC.fYC.SetUp ( phi, psi, c, ER );

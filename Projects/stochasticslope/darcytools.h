@@ -75,16 +75,20 @@ void DarcyTools::SetForcingFunction(TPZAutoPointer<TPZFunction<STATE> > fp)
         fForcingFunction = fp;
 }
 
+REAL globalhw;
+REAL globalht;
+REAL globalh;
+REAL gammaagua;
 void Forcing(const TPZVec<REAL> &pt, TPZVec<STATE> &disp)
 {
 		const auto &x=pt[0];
         const auto &y=pt[1];
         const auto &z=pt[2];
-        REAL yy=40-y;
-        REAL hw=10.;
+        REAL yy=globalht-y;
+        REAL hw=globalhw;
 
-        REAL H = 10.;
-        REAL gammaaugua=10.;
+        REAL H = globalh;
+        REAL gammaaugua=gammaagua;
        // cout << "--------------------------------------- hw/H = "<< hw/H << endl;
         //REAL gammaaugua=0.001;
 
@@ -143,7 +147,14 @@ TPZCompMesh * DarcyTools::CreateCMeshDarcy( )
     TPZFMatrix<STATE>  val2 ( 2,1,0. );
 
   //  this->fFunc(Forcing);
-
+ //REAL fH;//total slope heigth
+  //  REAL fHw;//water heigth
+ //   REAL fHt;//total heigth
+ //   REAL fGammaW;
+    globalhw=fHw;
+    globalht=fHt;
+    globalh=fH;
+    gammaagua=fGammaW;
     TPZAutoPointer<TPZFunction<STATE> > pressure = new TPZDummyFunction<STATE>(Forcing);
 
 
