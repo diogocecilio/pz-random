@@ -4,6 +4,7 @@
 #include "pzdarcymatwithmem.h"
 #include "pzgmesh.h"
 
+string filelocation2 = "/home/cemacom/projects/pz-random-release/Projects/stochasticslope/";
 
 class FieldTools
 {
@@ -178,7 +179,7 @@ TPZCompMesh * FieldTools::SettingCreateFild ( )
 {
     cout << "outco = ?";
     TPZCompMesh * cmesh = CreateCompMeshKL ( );
-    string outco="/home/diogo/projects/pz-random-build-release/Projects/stochasticslope/";
+    string outco=filelocation2;
     outco+=ffile;
     cout << "outco = " << outco;
     TPZFMatrix<REAL> readco;

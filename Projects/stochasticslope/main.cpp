@@ -45,6 +45,8 @@
 #include "plasticitytools.h"
 #include "fieldtools.h"
 
+string filelocation = "/home/cemacom/projects/pz-random/data";
+
 
 TPZGeoMesh * CreateGMeshRef ( int ref,int ref2,string file );
 TPZGeoMesh * CreateGMesh ( int ref,string file );
@@ -68,7 +70,7 @@ int main()
  //   auto time_span = static_cast<chrono::duration<double>> ( end - start );
  //   cout << " | total time in iterative process =  " << time_span.count() << std::endl;
 
-    MonteCarlo ( 0,1 );
+    MonteCarlo ( 653,1000 );
    // MonteCarloShearRed ( 500,1000 );
     //SolveMultiThread(100,200,2);
     // SolveDeterministic();
@@ -112,7 +114,9 @@ void MonteCarloShearRed ( int a,int b )
     int porderfield=1;
     int nref=2;
 
-    string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";
+    
+    string file =filelocation;
+    file+="/tri-struc-v2.msh";
 
 
     TPZGeoMesh *gmeshfields1 = CreateGMesh ( ref,file );
@@ -249,7 +253,9 @@ void SolveDeterministic(bool gimsrm)
 {
     int ref=1;
     int porder=3;
-    string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";//1:1
+    string file =filelocation;
+    file+="/tri-struc-v2.msh";
+
     // string file ="/home/diogo/projects/pz-random/data/n804e1531.msh";
 
     TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,3,file );
@@ -355,7 +361,8 @@ void SolveDeterministic()
 {
     int ref=1;
     int porder=2;
-    string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";//1:1
+    string file =filelocation;
+    file+="/tri-struc-v2.msh";
     // string file ="/home/diogo/projects/pz-random/data/n804e1531.msh";
 
     TPZGeoMesh *gmeshpalstic = CreateGMeshRef ( ref,2,file );
@@ -425,7 +432,8 @@ void MonteCarlo ( int a,int b )
     int porderfield=1;
     int nref=2;
 
-    string file ="/home/diogo/projects/pz-random/data/tri-struc.msh";
+    string file =filelocation;
+    file+="/tri-struc.msh";
     //string file ="/home/diogo/projects/pz-random/data/tri-struc-v2.msh";
 
 
@@ -524,8 +532,8 @@ void MonteCarlo ( int a,int b )
         int numiterfs =20;
         REAL tolres = 1.e-6;
         int numiterres =20;
-        REAL l =0.2;
-        REAL lambda0=0.61;
+        REAL l =0.1;
+        REAL lambda0=0.20;
 
 
         int iref;
