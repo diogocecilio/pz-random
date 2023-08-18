@@ -171,12 +171,12 @@ TPZCompMesh * DarcyTools::CreateCMeshDarcy( )
 	BCond2->SetForcingFunction(pressure);
 
 
-    val2(0,0)=0;
-	TPZMaterial * BCond3 = material->CreateBC ( material, -5, 0, val1, val2 );//left
+  //  val2(0,0)=0;
+	//TPZMaterial * BCond3 = material->CreateBC ( material, -5, 0, val1, val2 );//left
 
 
-    val2(0,0)=10*10;
-    TPZMaterial * BCond4 = material->CreateBC ( material, -2, 0, val1, val2 );//right
+ //   val2(0,0)=10*10;
+  //  TPZMaterial * BCond4 = material->CreateBC ( material, -2, 0, val1, val2 );//right
 
 
     cmesh->InsertMaterialObject(BCond0);
@@ -436,6 +436,8 @@ void DarcyTools::PostDarcy(string vtk)
     postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtk );
 
     postprocdeter->PostProcess ( 0 );
+
+    delete postprocdeter;
 }
 void  DarcyTools::CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess )
 {

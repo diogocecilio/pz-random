@@ -32,7 +32,7 @@ protected:
     REAL fc;
     REAL fphi;
     int fporder;
-    REAL fntimes=2.5;
+    REAL fntimes=4.;
     bool print;
 
 
@@ -448,6 +448,7 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
         cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;
         fs = GravityIncrease (  );
     }
+//    delete analysis;
     return fs;
 }
 REAL PlasticityTools::GravityIncrease (  )
@@ -512,6 +513,7 @@ REAL PlasticityTools::GravityIncrease (  )
     TPZElastoPlasticAnalysis  * anal = CreateAnalysis (  );
     anal->AcceptSolution();
 
+//    delete anal;
     return FS;
 }
 
@@ -866,6 +868,7 @@ void PlasticityTools::DivideElementsAbove(REAL sqj2, std::set<long> &elindices)
             if (!pMatWithMem2) {
                 continue;
             }
+
             int porder = intel->GetPreferredOrder();
             TPZStack<long> subels;
             long index = cel->Index();

@@ -4,7 +4,7 @@
 #include "pzdarcymatwithmem.h"
 #include "pzgmesh.h"
 
-string filelocation2 = "/home/cemacom/projects/pz-random-release/Projects/stochasticslope/";
+string filelocation2 = "/home/diogo/projects/pz-random-build-release/Projects/stochasticslope/";
 
 class FieldTools
 {
@@ -189,6 +189,7 @@ TPZCompMesh * FieldTools::SettingCreateFild ( )
     TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmesh );
     analysis1x->LoadSolution ( readco );
 
+    delete analysis1x;
     return fcmesh;
 }
 

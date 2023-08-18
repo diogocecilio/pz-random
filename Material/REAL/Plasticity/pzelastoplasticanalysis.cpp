@@ -833,6 +833,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
             }
 
             lambda += dlamb;
+            lambda0=lambda;
             dww = dwb*dlamb+dws;
             dw += dww;
             displace+=dww;
@@ -844,8 +845,16 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
                 conv=false;
                 break;
             }
+
             counter++;
             LoadSolution ( displace );
+
+//             if(fabs(dlamb)<1.e-5 && residualrhs<1.e-3)
+//             {
+//                 cout << " fabs(dlamb)<1.e-5 && normdu<1.e-3 : conv=true" <<endl;
+//                 conv=true;
+//                 break;
+//             }
         }
         while ( counter<numiter2 && normdu>tol2 );
 
