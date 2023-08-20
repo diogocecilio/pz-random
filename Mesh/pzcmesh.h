@@ -446,7 +446,7 @@ public:
     /** @brief Create a computational element based on the geometric element */
     TPZCompEl *CreateCompEl(TPZGeoEl *gel, long &index)
     {
-        return fCreate.CreateCompEl(gel, *this, index);
+        return fCreate.CreateCompEl(gel, *this, index);//leak
     }
     
 	/** @brief Creates the computational elements, and the degree of freedom nodes */ 

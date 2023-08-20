@@ -23,6 +23,7 @@ public:
     FieldTools();
     FieldTools(FieldTools & copy);
     FieldTools(TPZGeoMesh* gmesh,REAL lx, REAL ly,int M,int type,int porder,string file);
+    FieldTools(TPZGeoMesh* gmesh,REAL lx, REAL ly,int M,int type,int porder);
     ~FieldTools();
 
     TPZCompMesh* GetCMesh()
@@ -31,8 +32,15 @@ public:
     }
 
     void ComputeField (REAL mean,REAL cov,int samples );
+
+    void ComputeFields (REAL mean1,REAL mean2,REAL cov1, REAL cov2,int samples,REAL crossfac,string file1,string file2);
+
+
+    TPZCompMesh * SettingCreateFild (string file );
+
     TPZCompMesh* CreateCompMeshKL ( );
     TPZFMatrix<REAL> CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata );
+    TPZVec<TPZFMatrix<REAL>>  GenerateNonGaussinRandomField (TPZFMatrix<REAL> PHI, REAL meanc,REAL meanphi, REAL covc,REAL covphi,int samples,REAL crossfac);
     TPZCompMesh * SettingCreateFild (  );
     void PrintMat ( std::string out,TPZFMatrix<REAL> mat );
     void  ReadFile ( std::string file,TPZFMatrix<REAL> &out );
@@ -64,9 +72,20 @@ FieldTools::FieldTools(TPZGeoMesh*gmesh,REAL lx, REAL ly,int M,int type,int pord
     fcmesh = CreateCompMeshKL ( );
 }
 
+FieldTools::FieldTools(TPZGeoMesh*gmesh,REAL lx, REAL ly,int M,int type,int porder)
+{
+    fgmesh =gmesh;
+    flx=lx;
+    fly=ly;
+    fM=M;
+    ftype=type;
+    fporder=porder;
+    fcmesh = CreateCompMeshKL ( );
+}
+
 FieldTools::~FieldTools()
 {
-
+    //delete fcmesh;
 }
 
 TPZCompMesh* FieldTools::CreateCompMeshKL ( )
@@ -107,11 +126,32 @@ void FieldTools::ComputeField ( REAL mean,REAL cov,int samples)
 
 }
 
+void FieldTools::ComputeFields ( REAL mean1,REAL mean2,REAL cov1, REAL cov2,int samples,REAL crossfac,string file1,string file2)
+{
+
+    KLAnalysis * klanal = new KLAnalysis ( fcmesh );
+
+    KLMaterial *mat = dynamic_cast<KLMaterial*> ( fcmesh->MaterialVec() [1] );
+
+    klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
+
+    klanal->Solve();
+
+    TPZFMatrix<REAL> eigenfunctions = klanal->Solution();
+
+
+    TPZVec<TPZFMatrix<REAL>>  fields = GenerateNonGaussinRandomField (eigenfunctions, mean1, mean2,  cov1, cov2, samples, crossfac);
+
+    PrintMat ( file1,fields[0] );
+
+    PrintMat ( file2,fields[1] );
+}
+
 TPZFMatrix<REAL> FieldTools::CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata )
 {
     TPZFMatrix<REAL>  PHIt;
 
-    PHI.Transpose ( &PHIt );
+   //PHI.Transpose ( &PHIt );
 
     int M = PHI.Cols();
 
@@ -156,6 +196,74 @@ TPZFMatrix<REAL> FieldTools::CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, 
     return hhat;
 }
 
+TPZVec<TPZFMatrix<REAL>>  FieldTools::GenerateNonGaussinRandomField (TPZFMatrix<REAL> PHI, REAL meanc,REAL meanphi, REAL covc,REAL covphi,int samples,REAL crossfac)
+{
+    TPZFMatrix<REAL>  PHIt;
+
+    //PHI.Transpose ( &PHIt );
+
+    int M = PHI.Cols();
+
+
+    //unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    //std::default_random_engine generator(seed);
+
+
+
+    std::normal_distribution<REAL> distribution ( 0., 1. );
+
+    int nsamples = samples;
+    TPZFMatrix<REAL> THETA (M,samples ), THETA2( M, samples);
+    REAL correlation = crossfac;
+    for ( int n = 0; n < samples; n++ ) {
+        for ( int iexp = 0; iexp < M; iexp++ ) {
+            std::random_device rd{};
+            std::mt19937 generator{ rd() };
+            REAL xic = distribution ( generator );
+            REAL xiphi = distribution ( generator );
+            THETA(iexp,n) = xic;
+            THETA2(iexp,n) = xic * correlation + xiphi * sqrt ( 1 - correlation * correlation );
+        }
+    }
+
+    TPZFMatrix<REAL> hhatphi, hhatcoes;
+
+    PHI.Multiply ( THETA, hhatcoes );
+    PHI.Multiply ( THETA2, hhatphi );
+
+
+    REAL sdev = covc * meanc;
+    REAL xi = sqrt ( log ( 1 + pow ( ( sdev / meanc ),2 ) ) );
+    REAL lambda = log ( meanc ) - xi * xi / 2.;
+
+    for ( int i = 0; i < hhatcoes.Rows(); i++ ) {
+        for ( int j = 0; j < hhatcoes.Cols(); j++ ) {
+                hhatcoes(i,j) = exp ( lambda + xi * hhatcoes(i,j) );
+        }
+
+    }
+
+    sdev = covphi * meanphi;
+    xi = sqrt ( log ( 1 + pow ( ( sdev / meanphi ), 2 ) ) );
+    lambda = log ( meanphi ) - xi * xi / 2.;
+    for ( int i = 0; i < hhatphi.Rows(); i++ ) {
+        for ( int j = 0; j < hhatphi.Cols(); j++ ) {
+                hhatphi(i,j) = exp ( lambda + xi * hhatphi(i,j) );
+        }
+
+    }
+
+    TPZVec<TPZFMatrix<REAL>> fields(2);
+    fields[0] = hhatcoes;
+    fields[1] = hhatphi;
+
+
+
+    std::cout << "\n Exiting  generalized eigenvalue prolem" << endl;
+
+    return fields;
+}
+
 void FieldTools::PrintMat ( std::string out,TPZFMatrix<REAL> mat )
 {
     std::ofstream print ( out );
@@ -193,6 +301,22 @@ TPZCompMesh * FieldTools::SettingCreateFild ( )
     return fcmesh;
 }
 
+TPZCompMesh * FieldTools::SettingCreateFild (string file )
+{
+    TPZCompMesh * cmesh = CreateCompMeshKL ( );
+    string outco=filelocation2;
+    outco+=file;
+    cout << "outco = " << outco;
+    TPZFMatrix<REAL> readco;
+    ReadFile ( outco,readco );
+    cmesh->LoadSolution ( readco );
+
+    TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmesh );
+    analysis1x->LoadSolution ( readco );
+
+    delete analysis1x;
+    return fcmesh;
+}
 
 
 void  FieldTools::ReadFile ( std::string file,TPZFMatrix<REAL> &out )

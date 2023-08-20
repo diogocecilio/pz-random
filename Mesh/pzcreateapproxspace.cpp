@@ -94,7 +94,7 @@ TPZCompEl *CreateQuadEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
 
 TPZCompEl *CreateTriangleEl(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
 	if(!gel->Reference() && gel->NumInterfaces() == 0)
-		return new TPZIntelGen<TPZShapeTriang>(mesh,gel,index);
+		return new TPZIntelGen<TPZShapeTriang>(mesh,gel,index);//leak
     index = -1;
 	return NULL;
 }
@@ -145,7 +145,7 @@ TPZCompEl *CreateQuadElWithMem(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
 }
 TPZCompEl *CreateTriangleElWithMem(TPZGeoEl *gel,TPZCompMesh &mesh,long &index) {
 	if(!gel->Reference() && gel->NumInterfaces() == 0)
-		return new TPZCompElWithMem < TPZIntelGen<TPZShapeTriang> >(mesh,gel,index);
+		return new TPZCompElWithMem < TPZIntelGen<TPZShapeTriang> >(mesh,gel,index);//leak
     index = -1;
 	return NULL;
 }
@@ -595,7 +595,7 @@ TPZCompEl *TPZCreateApproximationSpace::CreateCompEl(TPZGeoEl *gel, TPZCompMesh 
             return fp[EQuadrilateral](gel,mesh,index);
             break;
         case ETriangle:
-            return fp[ETriangle](gel,mesh,index);
+            return fp[ETriangle](gel,mesh,index);//leak
             break;
         case EPiramide:
             return fp[EPiramide](gel,mesh,index);

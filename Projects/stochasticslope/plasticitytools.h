@@ -67,6 +67,8 @@ public:
 
     REAL Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres, REAL l,REAL lambda0);
 
+    REAL Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres, REAL l,REAL lambda0, bool & converge );
+
     void PostPlasticity(string vtkd);
 
     void CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess );
@@ -446,11 +448,28 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
     if ( converge==false )
     {
         cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;
-        fs = GravityIncrease (  );
+        //fs = GravityIncrease (  );
     }
-//    delete analysis;
+    delete analysis;
     return fs;
 }
+
+REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres, REAL l,REAL lambda0, bool & converge )
+{
+
+  //  fcmesh->Solution().Redim(fneq, 1);
+    TPZElastoPlasticAnalysis * analysis = CreateAnalysis (  );
+    cout << "Solving incremental plasticity with Arc-length method..."<<endl;
+    REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    if ( converge==false )
+    {
+        cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;
+        fs = GravityIncrease (  );
+    }
+    delete analysis;
+    return fs;
+}
+
 REAL PlasticityTools::GravityIncrease (  )
 {
 
@@ -549,7 +568,7 @@ REAL PlasticityTools::ShearRed ( )
     do {
 
         fcmesh->Solution().Zero();
-       // std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
+        std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
         TPZElastoPlasticAnalysis  * anal = CreateAnalysis();
 
         REAL norm = 1000.;
@@ -603,6 +622,7 @@ REAL PlasticityTools::ShearRed ( )
 REAL PlasticityTools::ShearRed (TPZManVector<TPZCompMesh*,3> vecmesh,int imc )
 {
 
+    std::cout << "aqqqqq "<<std::endl;
     LoadingRamp(1.);
 
     REAL FS=0.8,FSmax=5.,FSmin=0.,tol=0.001;
@@ -622,7 +642,7 @@ REAL PlasticityTools::ShearRed (TPZManVector<TPZCompMesh*,3> vecmesh,int imc )
     do {
 
         fcmesh->Solution().Zero();
-       // std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
+        std::cout << "FS "<< FS <<  "| step = " << counterout  <<std::endl;
         TPZElastoPlasticAnalysis  * anal = CreateAnalysis();
 
         TransferSolutionFromShearRed (  vecmesh,imc, FS );
@@ -682,6 +702,8 @@ void PlasticityTools::PostPlasticity(string vtkd)
     postprocdeter->DefineGraphMesh ( 2,scalNames,vecNames,vtkd );
 
     postprocdeter->PostProcess ( 0 );
+
+    delete postprocdeter;
 }
 void  PlasticityTools::CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess )
 {
