@@ -901,8 +901,8 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
         {
             cout <<"-----Failed to converge! "<< " residualrhs  = " <<residualrhs <<" diffnorm = " <<diffnorm  <<endl;
             converge=false;
-            AcceptSolution();
-            return lambda;
+            //AcceptSolution();
+            return 0;
         }
 
 
