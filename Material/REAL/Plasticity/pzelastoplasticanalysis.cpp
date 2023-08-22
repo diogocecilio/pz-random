@@ -887,9 +887,9 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
             AcceptSolution();
             int ndesi=10;
             l*=REAL ( ndesi ) /counter;
-            if ( l>1. )
+            if ( l>0.5 )
             {
-                l=1.;
+                l=0.5;
             }
             fslist.push_back ( lambda );
 

@@ -448,7 +448,7 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
     if ( converge==false )
     {
         cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;
-        //fs = GravityIncrease (  );
+        fs = GravityIncrease (  );
     }
     delete analysis;
     return fs;
