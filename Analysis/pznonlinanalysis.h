@@ -47,6 +47,14 @@ public:
 
 	}
 
+
+	virtual REAL IterativeProcessLinearisedArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge)
+	{
+
+		std::cout<<"Not implemented here" <<std::endl;
+		DebugStop();
+	}
+
 	/**
 	 * @brief Implements a golden section line search.
 	 * @param Wn

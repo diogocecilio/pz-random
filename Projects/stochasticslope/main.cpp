@@ -69,7 +69,7 @@ int main()
 
     //SolveMultiThread(MonteCarlo2,400,500,16);
     //MonteCarlo2 ( 0,100 );
-    SolveDeterministic ( 1 );
+    SolveDeterministic ( 0 );
 
     auto end = sc.now();
     auto time_span = static_cast<chrono::duration<double>> ( end - start );
@@ -419,9 +419,9 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=3;
+    int ref=4;
     int porder=2;
-    int nref=4;
+    int nref=1;
 
     string file =filelocation;
     //file+="/tri-struc.msh";
@@ -430,22 +430,23 @@ void SolveDeterministic ( bool gimsrm )
 
     std::vector<double> coordbc(3);
     coordbc[0]=30.;coordbc[1]=5.;coordbc[2]=5.;
+    //coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
     TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file,coordbc );
     TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file,coordbc );
 
     REAL gammaagua=0.;
     REAL gammasolo=20.;
     REAL coes=23.;
-    REAL phi=0.01*M_PI/180.;
+    REAL phi=1.*M_PI/180.;
     REAL E=20000.;
     REAL nu =0.49;
     int numthreads=10;
 
     REAL tolfs =0.01;
     int numiterfs =30;
-    REAL tolres = 1.e-3;
+    REAL tolres = 1.e-6;
     int numiterres =30;
-    REAL l =0.1;
+    REAL l =0.5;
     REAL lambda0=0.1;
 
 
@@ -472,7 +473,6 @@ void SolveDeterministic ( bool gimsrm )
     numiterfs =30;
     tolres = 1.e-6;
     numiterres =30;
-    l =0.1;
     lambda0=0.1;
     cout << "Fim do refinamento da malha"<< endl;
 

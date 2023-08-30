@@ -775,6 +775,233 @@ void TPZElastoPlasticAnalysis::IterativeProcess ( std::ostream &out,REAL tol,int
     }
 }
 
+void TPZElastoPlasticAnalysis::IterativeProcessArcLength ()
+{
+
+    int maxiter1=2,maxiter2=2,counterout=0;
+    plasticmat * material= dynamic_cast<plasticmat *> ( fCompMesh->FindMaterial ( 1 ) );
+    REAL lambda,lambda0,deltal,dlambda=0.,eta0=1.;
+    deltal=0.5;
+
+    material->SetWhichLoadVector ( 2 );
+    material->SetLoadFactor ( 1. );
+    AssembleResidual();
+    TPZFMatrix<REAL> qt=Rhs();
+
+    REAL tol=0.01;
+    int eqs=Solution().Rows();
+    TPZFMatrix<REAL> deltap0(eqs),p,p0;
+    deltap0.Zero();
+    p=deltap0;
+    p0=Solution();
+    std::vector<REAL> etavec;
+    std::vector<REAL> lambdavec;
+    do
+        {
+            int counter=0;
+            lambda0=0.1;
+            eta0=0.;
+            do
+            {
+
+                TPZFMatrix<REAL> dpbar,dpbar1;
+                TPZFMatrix<REAL> dpt;
+                material->SetWhichLoadVector ( 0 );////intvol(phi b+flux phi)domega+intvol(sig B)domega
+                material->SetLoadFactor ( lambda0);
+                Assemble();
+                TPZFMatrix<REAL> go=Rhs();
+                this->fSolver->Solve ( go,dpbar );
+                this->fSolver->Solve ( qt,dpt );
+
+                REAL d1=Dot(dpt,deltap0);
+                REAL d2=Dot(dpt,dpbar);
+                REAL d3=Dot(dpbar,dpbar);
+                REAL d4=Dot(dpbar,deltap0);
+
+                REAL d5=-Dot(dpbar,qt);
+                REAL d6=Dot(dpbar,go);
+                REAL d7=Dot(dpt,go);
+
+
+                REAL d8=Dot(deltap0,deltap0);
+
+                REAL c1 = Dot(dpt,dpt);
+                REAL c2 = -Dot(dpt,qt);
+
+
+                REAL a1,a2,a3,eta=1;
+                a1=eta*eta*c1;
+                a2=2*eta*d1+2*eta*eta*d2;
+                a3=eta*eta+2*eta*d4+(d8-deltal*deltal);
+                TPZVec<REAL> roots=SolveBhaskara(a1, a2, a3,lambda0);
+
+                //selecting the correct root
+                {
+
+                    REAL dl2cos1=d8+eta*(d4+(roots[0]-lambda0)*d5);
+                    REAL dl2cos2=d8+eta*(d4+(roots[1]-lambda0)*d5);
+
+                    lambda=roots[0];
+
+                    if(dl2cos2>dl2cos1)lambda=roots[1];
+
+                }
+
+                dlambda=lambda-lambda0;
+
+                deltap0=eta*(dpbar+dlambda*dpt);
+                p=p0+deltap0;
+                p0=p;
+
+
+                material->SetWhichLoadVector ( 0 );
+                material->SetLoadFactor ( lambda );
+                Assemble();
+                TPZFMatrix<REAL> g1=eta*Rhs();
+
+
+
+                REAL e1j,e2j;
+                e1j=Dot( dpbar,g1 );
+                e2j=Dot( dpt,g1 );
+
+
+                REAL  s1=e1j+lambda*e2j+lambda*d5+lambda*lambda*c2;
+                REAL  s0=d6+lambda*(d5+d7)+lambda*lambda*c2;
+
+                REAL s1s0 =fabs(s1/s0);
+
+                cout << "lambda  = "<< lambda << "lambda0 = "<< lambda0 << "eta = " << eta << endl;
+                if(s1s0<tol)
+                {
+                    cout << "acept line factor eta";
+                }
+
+
+                counter++;
+            }
+            while (counter<maxiter1);
+
+
+            counterout++;
+        }
+        while ( counterout<maxiter2);
+
+
+
+
+}
+
+
+REAL TPZElastoPlasticAnalysis::IterativeProcessLinearisedArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge)
+{
+std::vector<double> fslist;
+    REAL diff=1000.;
+    int counterout=0;
+    plasticmat * material= dynamic_cast<plasticmat *> ( fCompMesh->FindMaterial ( 1 ) );
+    REAL lambda=lambda0;
+    REAL lambdan=1000;
+    TPZFMatrix<REAL> dw,dws,dwb,dww,displace,displacen;
+    dw=fSolution;
+    dw.Zero();
+    cout << " a   " <<endl;
+    material->SetWhichLoadVector ( 2 );
+    material->SetLoadFactor ( 1. );
+    AssembleResidual();
+    TPZFMatrix<REAL> FBODY=Rhs();
+    dw=Solution();
+    displace=Solution();
+    dw.Zero();
+    displace.Zero();
+    REAL normfbody=Norm ( FBODY );
+    cout << "normfbody = " << normfbody << endl;
+    displacen=displace;
+
+    do//while(counterout<numiter && diff>tol);
+    {
+        cout << " load step  = " << counterout+1 << " load factor  = " << lambda << " diff = " << diff << " l = " << l <<  endl;
+        int counter=0;
+        //dw.Zero();
+        bool conv=true;
+        REAL residualrhs=10.;
+        REAL normrhsn=10.e12;
+        REAL normdu=10.;
+        REAL diffnorm=0.;
+
+        REAL dlamb=0.;
+        do//while( counter<numiter2 && normdu>tol2 );
+        {
+            material->SetWhichLoadVector ( 0 );
+            material->SetLoadFactor ( lambda );
+            Assemble();
+            this->fSolver->Solve ( fRhs,dws );
+            TPZFMatrix<REAL> residual = Rhs();
+            normrhsn=residualrhs;
+            residualrhs=Norm ( residual );
+            diffnorm=residualrhs-normrhsn;
+            this->fSolver->Solve ( FBODY,dwb );
+
+
+            REAL num,den;
+            num=Dot(dw,dws);
+            den=Dot(dw,dwb);
+
+            if ( counter==0 )
+            {
+                dlamb= computelamda0 ( dwb, dw,l );
+
+            }
+            else{
+                dlamb=-num/den;
+            }
+
+
+
+
+            dww = dwb*dlamb+dws;
+
+            normdu=Norm ( dww ) ;
+
+
+            cout << " counter  = " << counter+1 <<" normrhs = " <<residualrhs << " normdu = " << normdu << " lambda = "<< lambda << " dlamb = "<< dlamb  << endl;
+            if (normdu>100. || lambda<1.e-3)
+            {
+                fSolution.Zero();
+                fRhs.Zero();
+                displace.Zero();
+                //dw.Zero();
+                LoadSolution ( displacen );
+
+                lambda=lambdan/2;
+                conv=false;
+
+                //break;
+            }else{
+
+                dw += dww;
+                lambda += dlamb;
+                displace+=dww;
+                counter++;
+                LoadSolution ( displace );
+            }
+
+        }
+        while ( counter<numiter2 && normdu>tol2 );
+        counterout++;
+        diff=fabs ( lambda-lambdan );
+        lambdan=lambda;
+        displacen=displace;
+    }
+    while ( counterout<numiter && diff>tol );
+
+    AcceptSolution();
+    cout << " final safety factor = "<<lambda << endl;
+
+    converge =true;
+    return lambda;
+
+}
+
 
 REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge )
 {
@@ -804,7 +1031,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
     {
         cout << " load step  = " << counterout+1 << " load factor  = " << lambda << " diff = " << diff << " l = " << l <<  endl;
         int counter=0;
-        dw.Zero();
+        //dw.Zero();
         bool conv=true;
         REAL residualrhs=10.;
         REAL normrhsn=10.e12;
@@ -830,6 +1057,28 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
             else
             {
                 dlamb= computelamda ( dwb, dws,  dw,  l );
+//                 TPZVec<REAL> lamdbs;
+//                 lamdbs= computelamdacris ( dwb, dws,  dw,  l );
+//
+//
+//                 TPZFMatrix<REAL> res1,res2;
+//                 material->SetWhichLoadVector ( 0 );
+//                 material->SetLoadFactor ( lambda+lamdbs[0] );
+//                 Assemble();
+//                 this->fSolver->Solve ( fRhs,res1 );
+//                 material->SetWhichLoadVector ( 0 );
+//                 material->SetLoadFactor ( lambda+lamdbs[1] );
+//                 Assemble();
+//                 this->fSolver->Solve ( fRhs,res2 );
+//
+//                 if(Norm(res1)<Norm(res2))
+//                 {
+//                     dlamb=lamdbs[0];
+//                 }
+//                 else{
+//                     dlamb=lamdbs[1];
+//                 }
+
             }
 
             lambda += dlamb;
@@ -855,7 +1104,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
 //                 conv=true;
 //                 break;
 //             }
-        }
+            }
         while ( counter<numiter2 && normdu>tol2 );
 
         if ( conv==false )
@@ -870,6 +1119,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
             fSolution.Zero();
             fRhs.Zero();
             displace.Zero();
+            //dw.Zero();
             LoadSolution ( displacen );
             l*=0.5;
         }
@@ -887,9 +1137,9 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessArcLength ( REAL tol,int numiter,
             AcceptSolution();
             int ndesi=10;
             l*=REAL ( ndesi ) /counter;
-            if ( l>0.5 )
+            if ( l>1. )
             {
-                l=0.5;
+                l=1.;
             }
             fslist.push_back ( lambda );
 
