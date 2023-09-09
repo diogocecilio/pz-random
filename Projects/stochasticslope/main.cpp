@@ -443,10 +443,10 @@ void SolveDeterministic ( bool gimsrm )
     int numthreads=10;
 
     REAL tolfs =0.01;
-    int numiterfs =30;
+    int numiterfs =100;
     REAL tolres = 1.e-6;
     int numiterres =30;
-    REAL l =0.5;
+    REAL l =0.02;
     REAL lambda0=0.1;
 
 
@@ -470,7 +470,7 @@ void SolveDeterministic ( bool gimsrm )
     }
 
     tolfs =0.01;
-    numiterfs =30;
+    numiterfs =100;
     tolres = 1.e-6;
     numiterres =30;
     lambda0=0.1;

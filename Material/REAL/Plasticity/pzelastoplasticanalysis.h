@@ -94,6 +94,7 @@ public:
 
     virtual REAL IterativeProcessLinearisedArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge);
 
+    virtual REAL IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge);
 
     REAL LineSearch(const TPZFMatrix<STATE> &Wn, TPZFMatrix<STATE> DeltaW, TPZFMatrix<STATE> &NextW, REAL tol, int niter);
 	
@@ -405,6 +406,80 @@ REAL  computelamda ( TPZFMatrix<REAL>& dwb, TPZFMatrix<REAL>& dws, TPZFMatrix<RE
     }
 }
 
+REAL  computelamda ( TPZFMatrix<REAL>& dwb, TPZFMatrix<REAL>& dws, TPZFMatrix<REAL>& dw, REAL psi,REAL deltalambda,REAL qtq,REAL& l )
+{
+
+
+
+    int sz = dwb.Rows();
+    REAL aa = 0.;
+
+    aa = Dot(dwb,dwb)+psi*psi*qtq;
+
+    REAL bb = 0.;
+
+    TPZFMatrix<REAL> dwcopy;
+
+    dwcopy = dw+dws;
+
+    bb = Dot(dwb,dwcopy)+deltalambda*psi*psi*qtq;
+
+    bb *= 2;
+    REAL cc = 0.;
+
+    cc= Dot(dwcopy,dwcopy)+deltalambda*deltalambda*psi*psi*qtq;
+
+    cc -= l * l;
+    REAL delta = bb * bb - 4. * aa * cc;
+    REAL dlamb2;
+    REAL dlamb1;
+
+
+    //cout << "delta = " << delta << endl;
+    //cout << "aa = " << aa << endl;
+    //cout << "bb = " << bb << endl;
+    //cout << "cc = " << cc << endl;
+    if ( fabs ( aa ) >1.e-12 && delta>0 ) {
+        dlamb2 = ( -bb + sqrt ( delta ) ) / ( 2. * aa ); //maior
+        dlamb1= ( -bb - sqrt ( delta ) ) / ( 2. * aa ); //menor
+        //return dlamb1;
+        //cout << "dlamb1" <<dlamb1 << " dlamb2 = "<< dlamb2 << endl;
+    } else {
+        if ( bb != 0 ) {
+        //cout << "-cc/bb" <<-cc/bb << endl;
+        return -cc/bb;
+    } else {
+        //cout << "(-bb ) / (2. * aa)" <<(-bb ) / (2. * aa)<< endl;
+        return ( -bb ) / ( 2. * aa );
+    }
+    }
+
+
+    //page 111, eq. 4.118 - Souza Neto
+    TPZFMatrix<REAL> temp1,temp1t,sol1,temp2,temp2t,sol2;
+    temp1=dwb;
+    temp1*=dlamb1;
+    temp1+=dws;
+    temp1+=dw;
+    temp1.Transpose(&temp1t);
+    temp1t.Multiply ( dw,sol1 );
+
+    temp2=dwb;
+    temp2*=dlamb2;
+    temp2+=dws;
+    temp2+=dw;
+    temp2.Transpose(&temp2t);
+    temp2t.Multiply( dw,sol2 );
+
+
+    if ( sol1.Get(0,0)>sol2.Get(0,0) ) {
+        //cout << "return 1 " << endl;
+        return dlamb1;
+    } else {
+        //cout << "return 2 " << endl;
+        return dlamb2;
+    }
+}
 
 REAL  computelamda0 ( TPZFMatrix<REAL>& dwb,  TPZFMatrix<REAL>& dw, REAL& l )
 {

@@ -446,7 +446,8 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
     cout << "Solving incremental plasticity with Arc-length method..."<<endl;
     //REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     //analysis->IterativeProcessLinearisedArcLength ( );
-    REAL fs = analysis->IterativeProcessLinearisedArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+   // REAL fs = analysis->IterativeProcessLinearisedArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     //REAL fs = analysis->IterativeProcessArcLengthWithLineSearch ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     if ( converge==false )
     {
