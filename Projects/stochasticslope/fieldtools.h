@@ -35,12 +35,16 @@ public:
 
     void ComputeFields (REAL mean1,REAL mean2,REAL cov1, REAL cov2,int samples,REAL crossfac,string file1,string file2);
 
+    void ComputeFields (TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples);
 
     TPZCompMesh * SettingCreateFild (string file );
 
     TPZCompMesh* CreateCompMeshKL ( );
     TPZFMatrix<REAL> CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata );
     TPZVec<TPZFMatrix<REAL>>  GenerateNonGaussinRandomField (TPZFMatrix<REAL> PHI, REAL meanc,REAL meanphi, REAL covc,REAL covphi,int samples,REAL crossfac);
+
+    void  GenerateNonGaussinRandomField (TPZFMatrix<REAL> PHI, TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples);
+
     TPZCompMesh * SettingCreateFild (  );
     void PrintMat ( std::string out,TPZFMatrix<REAL> mat );
     void  ReadFile ( std::string file,TPZFMatrix<REAL> &out );
@@ -147,6 +151,25 @@ void FieldTools::ComputeFields ( REAL mean1,REAL mean2,REAL cov1, REAL cov2,int 
     PrintMat ( file2,fields[1] );
 }
 
+
+void FieldTools::ComputeFields (TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples)
+{
+    KLAnalysis * klanal = new KLAnalysis ( fcmesh );
+
+    KLMaterial *mat = dynamic_cast<KLMaterial*> ( fcmesh->MaterialVec() [1] );
+
+    klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
+
+    klanal->Solve();
+
+    TPZFMatrix<REAL> eigenfunctions = klanal->Solution();
+
+
+    GenerateNonGaussinRandomField (eigenfunctions,   mean, cov,  file,  samples);
+
+
+}
+
 TPZFMatrix<REAL> FieldTools::CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata )
 {
     TPZFMatrix<REAL>  PHIt;
@@ -194,6 +217,55 @@ TPZFMatrix<REAL> FieldTools::CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, 
     PrintMat ( outdata,hhat );
 
     return hhat;
+}
+
+
+void  FieldTools::GenerateNonGaussinRandomField (TPZFMatrix<REAL> PHI, TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples)
+{
+      TPZFMatrix<REAL>  PHIt;
+
+    int nsamples = samples;
+
+    int M = PHI.Cols();
+
+    int nfields=mean.size();
+
+
+    for(int ifield=0;ifield<nfields;ifield++)
+    {
+        std::normal_distribution<REAL> distribution ( 0., 1. );
+        TPZFMatrix<REAL> THETA (M,samples );
+
+        for ( int n = 0; n < samples; n++ ) {
+            for ( int iexp = 0; iexp < M; iexp++ ) {
+                std::random_device rd{};
+                std::mt19937 generator{ rd() };
+                REAL xic = distribution ( generator );
+                THETA(iexp,n) = xic;
+            }
+    }
+
+        TPZFMatrix<REAL> hhat;
+        PHI.Multiply ( THETA, hhat );
+
+
+        REAL sdev = cov[ifield] * mean[ifield];
+        REAL xi = sqrt ( log ( 1 + pow ( ( sdev / mean[ifield] ),2 ) ) );
+        REAL lambda = log ( mean[ifield] ) - xi * xi / 2.;
+
+        for ( int i = 0; i < hhat.Rows(); i++ ) {
+            for ( int j = 0; j < hhat.Cols(); j++ ) {
+                hhat(i,j) = exp ( lambda + xi * hhat(i,j) );
+            }
+
+        }
+
+        PrintMat ( file[ifield],hhat );
+
+    }
+
+    std::cout << "\n Exiting  generalized eigenvalue prolem" << endl;
+
 }
 
 TPZVec<TPZFMatrix<REAL>>  FieldTools::GenerateNonGaussinRandomField (TPZFMatrix<REAL> PHI, REAL meanc,REAL meanphi, REAL covc,REAL covphi,int samples,REAL crossfac)

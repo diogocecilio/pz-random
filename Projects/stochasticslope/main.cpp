@@ -67,8 +67,8 @@ int main()
     chrono::steady_clock sc;
     auto start = sc.now();
 
-    SolveMultiThread(MonteCarlo2,201,1000,12);
-    //MonteCarlo2 ( 0,100 );
+    //SolveMultiThread(MonteCarlo2,201,1000,12);
+    MonteCarlo2 ( 0,100 );
    //SolveDeterministic ( 0);
 
     auto end = sc.now();
@@ -104,14 +104,8 @@ void MonteCarlo2 ( int a,int b )
     std::vector<double> coordbc(3);
 
     coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
-        TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
-            TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file );
-                TPZGeoMesh *gmeshfield3 = CreateGMesh ( ref,file );
-//     TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file,coordbc );
-//     TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file,coordbc );
-//     TPZGeoMesh *gmeshfield3 = CreateGMesh ( ref,file,coordbc );
-//
-//
+    TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
+
 
     REAL gammaagua=0.;
     REAL gammasolo=20.;
@@ -126,46 +120,27 @@ void MonteCarlo2 ( int a,int b )
     REAL ly=2.;
     int M=150;
     int type=3;
-    string file1  =  "cohes.txt";
     FieldTools field ( gmeshfield,lx, ly, M, type, porderfield );//aqui leak
 
-    lx=20.;
-    ly=2.;
-    M=150;
-    type=3;
-    string file2  =  "fric.txt";
-    FieldTools fieldphi ( gmeshfield2,lx, ly, M, type, porderfield );//aqui leak
 
-    lx=20.;
-    ly=20.;
-    M=150;
-    type=4;
-    string permfile="permeability.txt";
-    FieldTools fieldpermeability ( gmeshfield3,lx, ly, M, type, porderfield,permfile );//aqui leak
 
+    TPZVec<REAL> mean(3),cov(3);
+    TPZVec<string> filefields(3);
+    mean[0]=10.;mean[1]=30*M_PI/180.;mean[2]=1.;
+    cov[0]=0.3;cov[1]=0.2;cov[2]=0.3;
+    filefields[0]="cohes.txt";filefields[1]="fric.txt";filefields[2]="perm.txt";
 
     TPZManVector<TPZCompMesh*,3> vecmesh ( 3 );
-    if ( false )
+    if ( true )
     {
-        REAL mean1=10.;
-        REAL cov1=0.3;
-        REAL mean2=30.*M_PI/180.;
-        REAL cov2=0.2;
-        REAL crossfac=-0.5;
-        //ComputeFields ( REAL mean1,REAL mean2,REAL cov1, REAL cov2,int samples,REAL crossfac,string file1,string file2)
-        field.ComputeFields ( mean1, mean2, cov1,  cov2, samples, crossfac, file1, file2 );
-
-        mean1=1.;
-        cov1=0.2;
-        fieldpermeability.ComputeField ( mean1,cov1,samples );
-
+        field.ComputeFields ( mean ,   cov , filefields, samples );
         return;
     }
     else
     {
-        vecmesh[0] = field.SettingCreateFild ( file1 );
-        vecmesh[1] = fieldphi.SettingCreateFild ( file2 );
-        vecmesh[2] = fieldpermeability.SettingCreateFild ( permfile ); //corrigir file
+        vecmesh[0] = field.SettingCreateFild ( filefields[0] );
+        vecmesh[1] = field.SettingCreateFild ( filefields[1] );
+        vecmesh[2] = field.SettingCreateFild ( filefields[2] );
     }
 
     for ( int imc=a; imc<b; imc++ )
