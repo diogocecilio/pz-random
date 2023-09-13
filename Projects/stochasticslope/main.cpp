@@ -67,9 +67,9 @@ int main()
     chrono::steady_clock sc;
     auto start = sc.now();
 
-    //SolveMultiThread(MonteCarlo2,400,500,16);
+    SolveMultiThread(MonteCarlo2,201,1000,12);
     //MonteCarlo2 ( 0,100 );
-    SolveDeterministic ( 0 );
+   //SolveDeterministic ( 0);
 
     auto end = sc.now();
     auto time_span = static_cast<chrono::duration<double>> ( end - start );
@@ -97,14 +97,21 @@ void MonteCarlo2 ( int a,int b )
     int ref=3;
     int porder=2;
     int porderfield=1;
-    int nref=3;
+    int nref=2;
 
     string file =filelocation;
     file+="/tri-struc-v2.msh";
+    std::vector<double> coordbc(3);
 
-    TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfield3 = CreateGMesh ( ref,file );
+    coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
+        TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
+            TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file );
+                TPZGeoMesh *gmeshfield3 = CreateGMesh ( ref,file );
+//     TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file,coordbc );
+//     TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file,coordbc );
+//     TPZGeoMesh *gmeshfield3 = CreateGMesh ( ref,file,coordbc );
+//
+//
 
     REAL gammaagua=0.;
     REAL gammasolo=20.;
@@ -112,7 +119,7 @@ void MonteCarlo2 ( int a,int b )
     REAL phi=30.*M_PI/180.;
     REAL E=20000.;
     REAL nu =0.49;
-    int numthreads=10;
+    int numthreads=12;
 
     int samples =1000;
     REAL lx=20.;
@@ -165,8 +172,10 @@ void MonteCarlo2 ( int a,int b )
     {
 
 
-        TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
-        TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
+         TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
+         TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
+//         TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file ,coordbc);
+//         TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file,coordbc );
         string saidafs = "post/fs";
         string vtk1 = "postvtk/saidamontecarloplasticity";
         string vtk2 = "postvtk/saidamontecarlodarcy";
@@ -183,10 +192,10 @@ void MonteCarlo2 ( int a,int b )
 
         REAL tolfs =0.01;
         int numiterfs =30;
-        REAL tolres = 1.e-6;
+        REAL tolres = 1.e-3;
         int numiterres =30;
-        REAL l =0.1;
-        REAL lambda0=0.1;
+    REAL l =0.5;
+    REAL lambda0=0.5;
 
 
         REAL fsr=0.;
@@ -214,8 +223,8 @@ void MonteCarlo2 ( int a,int b )
         numiterfs =20;
         tolres = 1.e-6;
         numiterres =20;
-        l =0.1;
-        lambda0=0.2;
+    l =0.5;
+    lambda0=0.5;
         cout << "Fim do refinamento da malha"<< endl;
         // DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder+iref );
         // darcytools.TransferSolutionFrom ( vecmesh,imc );
@@ -251,7 +260,7 @@ void MonteCarlo ( int a,int b )
     int ref=3;
     int porder=2;
     int porderfield=1;
-    int nref=3;
+    int nref=2;
 
 
     string file =filelocation;
@@ -419,25 +428,25 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=4;
+    int ref=3;
     int porder=2;
-    int nref=1;
+    int nref=2;
 
     string file =filelocation;
-    //file+="/tri-struc.msh";
+    file+="/tri-struc-v2.msh";
     //file+="/mesh2x1cho.msh";
-    file+="/mesh2x1choeq.msh";
+    //file+="/mesh2x1choeq.msh";
 
     std::vector<double> coordbc(3);
-    coordbc[0]=30.;coordbc[1]=5.;coordbc[2]=5.;
-    //coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
-    TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file,coordbc );
-    TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file,coordbc );
+    //coordbc[0]=30.;coordbc[1]=5.;coordbc[2]=5.;
+    coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
+    TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
 
     REAL gammaagua=0.;
     REAL gammasolo=20.;
-    REAL coes=23.;
-    REAL phi=1.*M_PI/180.;
+    REAL coes=10.;
+    REAL phi=30.*M_PI/180.;
     REAL E=20000.;
     REAL nu =0.49;
     int numthreads=10;
@@ -446,20 +455,25 @@ void SolveDeterministic ( bool gimsrm )
     int numiterfs =100;
     REAL tolres = 1.e-6;
     int numiterres =30;
-    REAL l =0.02;
+    REAL l =1;
     REAL lambda0=0.1;
 
 
     int iref;
-
+    lambda0=0.5;
+    l=1;
+    bool converge;
     cout << "Iniciando o refinamento da malha... " << endl;
     std::set<long> elindices2;
     for ( iref=0; iref<nref; iref++ )
     {
+
+
         PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
         std::set<long> elindices;
         // REAL fsdummy = plastictoolstemp.ShearRed ( );
-        plastictoolstemp.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+         plastictoolstemp.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+        //plastictoolstemp.IterativeProcessHybridArcLength( tolfs, numiterfs, tolres, numiterres, l, lambda0, converge);
         plastictoolstemp.ComputeElementDeformation();
         //plastictoolstemp.PRefineElementsAbove ( 0.0015,porder+iref,elindices );
         plastictoolstemp.DivideElementsAbove ( 0.0015,elindices );
@@ -469,11 +483,13 @@ void SolveDeterministic ( bool gimsrm )
 
     }
 
+    l =1;
+    lambda0=0.5;
     tolfs =0.01;
     numiterfs =100;
     tolres = 1.e-6;
     numiterres =30;
-    lambda0=0.1;
+    //lambda0=0.1;
     cout << "Fim do refinamento da malha"<< endl;
 
     PlasticityTools plastictoolstemp2 ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );

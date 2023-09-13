@@ -32,7 +32,7 @@ protected:
     REAL fc;
     REAL fphi;
     int fporder;
-    REAL fntimes=4.;
+    REAL fntimes=8.;
     bool print;
 
 
@@ -464,7 +464,8 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
   //  fcmesh->Solution().Redim(fneq, 1);
     TPZElastoPlasticAnalysis * analysis = CreateAnalysis (  );
     cout << "Solving incremental plasticity with Arc-length method..."<<endl;
-    REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    //REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     if ( converge==false )
     {
         cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;
