@@ -67,8 +67,8 @@ int main()
     chrono::steady_clock sc;
     auto start = sc.now();
 
-    //SolveMultiThread(MonteCarlo2,201,1000,12);
-    MonteCarlo2 ( 0,1 );
+    SolveMultiThread(MonteCarlo2,500,1000,12);
+   // MonteCarlo2 ( 0,1 );
    //SolveDeterministic ( 0);
 
     auto end = sc.now();
@@ -94,8 +94,8 @@ int main()
 
 void MonteCarlo2 ( int a,int b )
 {
-        bool flux=true;
-        bool variableparam=false;
+        bool flux=false;
+        bool variableparam=true;
         if(flux==false)
         {
             cout<< "\n\n NO uncetainty in permability is taking into account.\n\n";
