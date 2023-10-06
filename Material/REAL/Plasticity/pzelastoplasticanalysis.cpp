@@ -998,7 +998,7 @@ std::vector<double> fslist;
 
 }
 
-REAL TPZElastoPlasticAnalysis::IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge)
+REAL TPZElastoPlasticAnalysis::IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge,REAL ndesi,REAL llimit)
 {
     std::ofstream print("loadvsdisplacement.dat");
 
@@ -1051,7 +1051,7 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessHybridArcLength(REAL tol,int numi
             normrhsn=residualrhs;
             residualrhs=Norm ( residual );
             this->fSolver->Solve ( qf,dwb );
-             //cout << " counter  = " << counter+1 <<" Norm(dws) = " << Norm(dws) <<" Norm(dwb) = " << Norm(dwb) << " Norm(dw) = " << Norm(dw)  <<endl;
+            // cout << " counter  = " << counter+1 <<" Norm(dws) = " << Norm(dws) <<" Norm(dwb) = " << Norm(dwb) << " Norm(dw) = " << Norm(dw)  <<endl;
             REAL dlamb=0.;
             if ( counterout==0 )
             {
@@ -1062,10 +1062,12 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessHybridArcLength(REAL tol,int numi
             {
                 if(counter==1&&counterout==0)
                 {
+                    //dlamb= computelamda0 ( dwb, dw,l );
                     dlamb= computelamda ( dwb, dws,  dw,  l );
 
                     //flag=false;
                 }else{
+
                    //flag=true;
                 TPZVec<REAL> lamdbs;
                 lamdbs= computelamdacris ( dwb, dws,  dw,  l );
@@ -1093,11 +1095,11 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessHybridArcLength(REAL tol,int numi
                 }
             }
             lambda=lambda+dlamb;
-            if(lambda<0.1){
+            if(lambda<0.001){
 
                 lambda=lambda0;
-                l*=0.5;
-                continue;
+               l*=0.5;
+               continue;
             }
             dww=dws+dlamb*dwb;
             dw =dw+ dww;
@@ -1111,20 +1113,20 @@ REAL TPZElastoPlasticAnalysis::IterativeProcessHybridArcLength(REAL tol,int numi
         while ( counter<numiter2 && check>tol2 );
         counterout++;
         //fSolution.Print(print);
-        print  << fSolution(23*2+1,0) << " " << lambda <<std::endl;
+        //print  << dw(23*2+1,0) << " " << lambda <<std::endl;
         AcceptSolution();
         diff=fabs(lambda-lambdan);
         lambdan=lambda;
 
-        REAL ndesi=3.;
 
         REAL fac=REAL(ndesi  /(counter+1));
 
 
-        //cout << "fac = " << fac << "(counter+1)  = "<< (counter+1) <<endl;
+        cout << "fac = " << fac << "(counter+1)  = "<< (counter+1) << "lold = "<<l <<endl;
         l*= fac;
-        if(l>5)l=5;
-       if(l<l0)l=l0;
+        if(l>2)l=2;
+       if(l<llimit)l=llimit;
+       cout <<   "lnew = "<<l <<endl;
     }
     while ( counterout<numiter && diff>tol );
 

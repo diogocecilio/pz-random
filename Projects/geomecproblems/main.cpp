@@ -20,15 +20,22 @@
 #include "pzelastoplasticanalysis.h"
 #include "readgidmesh.h"
 #include "slope.h"
+#include "slopecphi.h"
 #include "footing.h"
 
 int main() {
 
-   // runslope();
+  // SlopeCphi slopecphi;
 
-    Footing foot;
+ //  slopecphi.run();
 
-    foot.runfoot();
+//     Slope slope;
+//
+//     slope.run();
+
+   Footing foot;
+
+  foot.runfoot();
 
 
     return 0;

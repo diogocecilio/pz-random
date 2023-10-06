@@ -94,7 +94,7 @@ public:
 
     virtual REAL IterativeProcessLinearisedArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge);
 
-    virtual REAL IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge);
+    virtual REAL IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge,REAL ndesi,REAL llimit);
 
     REAL LineSearch(const TPZFMatrix<STATE> &Wn, TPZFMatrix<STATE> DeltaW, TPZFMatrix<STATE> &NextW, REAL tol, int niter);
 	

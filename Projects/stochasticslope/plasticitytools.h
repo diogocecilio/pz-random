@@ -446,7 +446,9 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
     cout << "Solving incremental plasticity with Arc-length method..."<<endl;
     //REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     //analysis->IterativeProcessLinearisedArcLength ( );
-    REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    REAL ndesirediters=7;
+     REAL llimit=0.04;
+    REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge,ndesirediters,llimit );
    // REAL fs = analysis->IterativeProcessLinearisedArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     //REAL fs = analysis->IterativeProcessArcLengthWithLineSearch ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     if ( converge==false )
@@ -465,7 +467,9 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
     TPZElastoPlasticAnalysis * analysis = CreateAnalysis (  );
     cout << "Solving incremental plasticity with Arc-length method..."<<endl;
     //REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
-    REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
+    REAL ndesirediters=7;
+     REAL llimit=0.04;
+    REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge,ndesirediters,llimit );
     if ( converge==false )
     {
         cout << "Arc-length fail to converge. Calling incremental plasticity brutal force."<<endl;

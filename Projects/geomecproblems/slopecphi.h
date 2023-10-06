@@ -19,7 +19,7 @@ typedef TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> LEMC;
 
 typedef   TPZMatElastoPlastic2D <LEMC, TPZElastoPlasticMem > plasticmat;
 
-class Footing
+class SlopeCphi
 {
 protected:
 
@@ -32,13 +32,13 @@ TPZCompMesh *CreateCompMesh(TPZGeoMesh *gmesh);
 void PostProcessVariables(TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames);
 void  CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess ,TPZCompMesh * cmesh);
 void PostPlasticity(string vtkd,TPZCompMesh * cmesh);
-void findid(TPZCompMesh *cmesh,TPZVec<REAL> coord);
-void runfoot();
+TPZVec<REAL> findid(TPZCompMesh *cmesh,TPZVec<REAL> coord);
+void run();
 
 };
 
 
-void Footing::runfoot(){
+void SlopeCphi::run(){
 
 
     TPZGeoMesh *gmesh =  CreateGeoMesh();
@@ -64,24 +64,25 @@ void Footing::runfoot(){
      REAL numiterfs=200;
      REAL numiterres =20;
      REAL tolres =1.e-5;
-     REAL l =0.04;
-     REAL lambda0=2;
-     REAL ndesirediters=3;
-     REAL llimit=0.04;
+     REAL l =0.5;
+     REAL lambda0=0.2;
      bool converge;
+     REAL ndesirediters=8;
+     REAL llimit=0.1;
+
 
      REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge,ndesirediters,llimit );
     // REAL fs = analysis->IterativeProcessLinearisedArcLength()
      //REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
-     string file  = "footing.vtk";
+     string file  = "slopecphi.vtk";
      PostPlasticity(file,cmesh);
 
 
 }
 
-TPZGeoMesh *Footing::CreateGeoMesh() {
+TPZGeoMesh *SlopeCphi::CreateGeoMesh() {
 
-    string file = "/home/diogo/projects/pz-random/data/mesh-foot.msh";
+    string file = "/home/diogo/projects/pz-random/data/meshcphi.msh";
 
     TPZGeoMesh *gmesh  =  new TPZGeoMesh();
 
@@ -144,21 +145,25 @@ TPZGeoMesh *Footing::CreateGeoMesh() {
             {
                 new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -1, *gmesh );//bottom
             }
-            else if ( ( fabs ( ( x0-500 ) ) <tol && fabs ( ( xf-500 ) ) <tol ) )
+            else if ( ( fabs ( ( x0-75 ) ) <tol && fabs ( ( xf-75 ) ) <tol ) )
             {
                 new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -2, *gmesh );//rigth
             }
+            else if ( ( fabs ( ( y0-30 ) ) <tol && fabs ( ( yf-30 ) ) <tol ) )
+            {
+                new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -3, *gmesh );//toprigth
+            }
+            else if ( ( fabs ( ( y0-40 ) ) <tol && fabs ( ( yf-40 ) ) <tol ) )
+            {
+                new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -4, *gmesh );//topleft
+            }
             else if ( ( fabs ( ( x0-0 ) ) <tol && fabs ( ( xf-0 ) ) <tol ) )
             {
-                new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -3, *gmesh );//left
+                new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -5, *gmesh );//left
             }
-            else if ( (xf <=5   && fabs ( ( yf-500 ) ) <tol)  )
+            else if ( ( fabs ( ( xf-x0 ) ) >tol && fabs ( ( yf-y0 ) ) >tol ) )
             {
-                new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -4, *gmesh );//load
-            }
-            else if ( (x0 >=5   && fabs ( ( yf-500 ) ) <tol)  )
-            {
-               // new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -5, *gmesh );//toprigth
+                new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( iel, TopoLine, -6, *gmesh );//ramp
             }
             else
             {
@@ -175,7 +180,7 @@ TPZGeoMesh *Footing::CreateGeoMesh() {
 
     gmesh->BuildConnectivity();
     cout << "c" << endl;
-    for ( int d = 0; d<4; d++ )
+    for ( int d = 0; d<3; d++ )
     {
         int nel = gmesh->NElements();
         TPZManVector<TPZGeoEl *> subels;
@@ -185,21 +190,28 @@ TPZGeoMesh *Footing::CreateGeoMesh() {
             gel->Divide ( subels );
         }
     }
-    std::ofstream print("gmesh.txt");
+    std::ofstream print("gmeshslopecphi.txt");
 	gmesh->Print(print);
-    std::ofstream files ( "teste-mesh.vtk" );
+    std::ofstream files ( "teste-mesh-slopecphi.vtk" );
     TPZVTKGeoMesh::PrintGMeshVTK ( gmesh,files,false );
     cout << "d" << endl;
     return gmesh;
 
 }
+//     REAL co[14][2] = {
+//         {75,0}, {75,30},{37.5,0},{40,25},
+//     {40,30},{35,25},{35,30},{30,25},
+//     {30,30},{35,40},{30,40},{0,0},{0,30},{0,40}};
+//
+// long indices[18][4] = {{14 ,13, 9, 11},{12, 8 ,9 ,13},{10 ,11, 9 ,7},{7 ,6, 4, 5},
+// {9 ,8, 6, 7},{2 ,5 ,4 ,1},{3, 6, 8, 12},{1 ,4, 6, 3},{3, 1},{12 ,3},{2 ,5},{1 ,2},{5 ,7},{10,11},{7 ,10},{13, 12},{11 ,14},{14 ,13}
+// };
 
-
-TPZCompMesh *Footing::CreateCompMesh(TPZGeoMesh *gmesh) {
+TPZCompMesh *SlopeCphi::CreateCompMesh(TPZGeoMesh *gmesh) {
 
 
     unsigned int dim  = 2;
-    const std::string name ( "ElastoPlastic COMP MESH Footing Problem " );
+    const std::string name ( "ElastoPlastic COMP MESH Slope Problem " );
 
     TPZCompMesh * cmesh =  new TPZCompMesh ( gmesh );
     cmesh->SetName ( name );
@@ -211,16 +223,16 @@ TPZCompMesh *Footing::CreateCompMesh(TPZGeoMesh *gmesh) {
 
       // Mohr Coulomb data
     //REAL mc_cohesion    = 490.;//kPa
-    REAL mc_cohesion    = 49.;//N/cm^2
-    REAL mc_phi         = 0.0001*M_PI/180;
+    REAL mc_cohesion    = 50.;//N/cm^2
+    REAL mc_phi         = 20.*M_PI/180;
     REAL mc_psi         = mc_phi;
 
     /// ElastoPlastic Material using Mohr Coulomb
     // Elastic predictor
     TPZElasticResponse ER;
-    REAL nu = 0.48;
+    REAL nu = 0.49;
     //REAL E = 10000000.;////kPa
-    REAL E = 1000000.;////N/cm^2
+    REAL E = 20000.;////N/cm^2
 
     LEMC plasticstep;
     //TPZPlasticStepPV<TPZYCMohrCoulombPV, TPZElasticResponse> LEMC;
@@ -237,7 +249,7 @@ TPZCompMesh *Footing::CreateCompMesh(TPZGeoMesh *gmesh) {
     REAL factor;
     TPZManVector<REAL, 3> bodyforce ( 3,0. );
     factor=1.;
-    bodyforce[1]=0.;
+    bodyforce[1]=-20.;
 
     material->SetPlasticity ( plasticstep );
 
@@ -254,6 +266,7 @@ TPZCompMesh *Footing::CreateCompMesh(TPZGeoMesh *gmesh) {
     TPZFMatrix<REAL> val1(2,2,0.),val2(2,1,0.);
 
     val2(1,0)=1.;
+    val2(0,0)=1.;
     auto * bcleft = material->CreateBC(material,-1,3,val1,val2);//bottom
 
     val2(0,0)=1.;
@@ -262,12 +275,7 @@ TPZCompMesh *Footing::CreateCompMesh(TPZGeoMesh *gmesh) {
 
     val2(0,0)=1.;
     val2(1,0)=0;
-    auto *  bcrigth = material->CreateBC(material,-3,3,val1,val2);//left
-
-    val2 ( 0,0 ) = 0;
-    //val2 ( 1,0 ) = -490 ;//kPa
-    val2 ( 1,0 ) = -49 ;//N/cm^2
-    auto * bcload = material->CreateBC ( material, -4, 1, val1, val2 );//ramp
+    auto *  bcrigth = material->CreateBC(material,-5,3,val1,val2);//left
 
 
 	cmesh->InsertMaterialObject(bcleft);
@@ -276,19 +284,19 @@ TPZCompMesh *Footing::CreateCompMesh(TPZGeoMesh *gmesh) {
 
     cmesh->InsertMaterialObject(bcrigth);
 
-    cmesh->InsertMaterialObject(bcload);
+
 
 	cmesh->SetAllCreateFunctionsContinuousWithMem();
 
     cmesh->AutoBuild();
 
-    std::ofstream print("cmeshf.txt");
+    std::ofstream print("cmeshslopecphi.txt");
 	cmesh->Print(print);
 
     return cmesh;
 }
 
-void Footing::PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames )
+void SlopeCphi::PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<std::string> &vecNames )
 {
 
 
@@ -307,7 +315,7 @@ void Footing::PostProcessVariables ( TPZStack<std::string> &scalNames, TPZStack<
 
 }
 
-void Footing::PostPlasticity(string vtkd,TPZCompMesh * cmesh)
+void SlopeCphi::PostPlasticity(string vtkd,TPZCompMesh * cmesh)
 {
     TPZPostProcAnalysis * postprocdeter = new TPZPostProcAnalysis();
     CreatePostProcessingMesh ( postprocdeter ,cmesh);
@@ -325,7 +333,7 @@ void Footing::PostPlasticity(string vtkd,TPZCompMesh * cmesh)
 
     delete postprocdeter;
 }
-void  Footing::CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess ,TPZCompMesh * cmesh)
+void  SlopeCphi::CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess ,TPZCompMesh * cmesh)
 {
     if ( PostProcess->ReferenceCompMesh() != cmesh )
     {
@@ -356,19 +364,20 @@ void  Footing::CreatePostProcessingMesh (TPZPostProcAnalysis * PostProcess ,TPZC
 
 }
 
-void Footing::findid(TPZCompMesh *cmesh,TPZVec<REAL> coord) {
+TPZVec<REAL> SlopeCphi::findid(TPZCompMesh *cmesh,TPZVec<REAL> coord) {
 
-    std::ofstream print("loadvsdisplacement.dat");
     TPZGeoMesh * gmesh =  cmesh->Reference();
-
-    int dim =2;
-
+    int dim = gmesh->Dimension()+1;
+    TPZVec<REAL> xd(dim,0.);
+    TPZVec<REAL> mpt(dim,0.);
+    xd[0] =coord[0];
+    xd[1] = coord[1];
     int id;
     int nels = gmesh->NElements();
     for(int iel=0; iel<nels; iel++) {
 
 
-        TPZVec<REAL> qsi(dim,0.);
+        TPZVec<REAL> qsi(2,0.);
         TPZGeoEl * gel = gmesh->ElementVec()[iel];
 
         TPZCompEl * cel = gel->Reference();
@@ -376,7 +385,7 @@ void Footing::findid(TPZCompMesh *cmesh,TPZVec<REAL> coord) {
 
 
         if(gel->MaterialId()<0)continue;
-        bool check = gel->ComputeXInverse(coord,qsi,1.e-5);
+        bool check = gel->ComputeXInverse(xd,qsi,1.e-5);
 
         if(check==true)
         {
@@ -389,10 +398,20 @@ void Footing::findid(TPZCompMesh *cmesh,TPZVec<REAL> coord) {
                 node->GetCoordinates(co);
                 id = node->Id();
 
-                long elementid1;
-                if(fabs(co[0]-coord[0])<1.e-3 && fabs(co[1]-coord[1])<1.e-3)
+                if(fabs(co[0]-xd[0])<1.e-3 && fabs(co[1]-xd[1])<1.e-3)
                 {
+                    TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
 
+                    TPZMaterialData data;
+
+                    data.fNeedsSol = true;
+
+                    intel->InitMaterialData ( data );
+
+                    intel->ComputeRequiredData ( data, qsi );
+
+ 					//cout << " data.sol  = "<<data.sol     << endl;
+                    return data.sol[0];
                 }
             }
 
@@ -401,4 +420,3 @@ void Footing::findid(TPZCompMesh *cmesh,TPZVec<REAL> coord) {
     }
 
 }
-

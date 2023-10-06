@@ -55,7 +55,7 @@ public:
 		DebugStop();
 	}
 
-	virtual REAL IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge)
+	virtual REAL IterativeProcessHybridArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge,REAL ndesi,REAL llimit)
 	{
 
 		std::cout<<"Not implemented here" <<std::endl;
