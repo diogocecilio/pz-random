@@ -13,3 +13,5 @@ add_subdirectory(randomdarcy)
 add_subdirectory(stochasticslope)
 
 add_subdirectory(elasticity)
+
+add_subdirectory(geomecproblems)

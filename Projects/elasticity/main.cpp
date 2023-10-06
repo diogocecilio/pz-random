@@ -106,7 +106,7 @@ void SolveSelfWeigthBar(string filename)
 	TPZGeoMesh *gmesh = CreateGeoMesh();
 
 	// Creating computational mesh (approximation space and materials)
-	int p = 3;
+	int p = 1;
     TPZCompEl::SetgOrder(p);
     TPZCompMesh *cmesh = CreateMesh(gmesh);
 	// Solving linear equations
@@ -122,6 +122,10 @@ void SolveSelfWeigthBar(string filename)
 	direct = 0;
 
 	an.Run();
+    TPZFMatrix<REAL> sol = an.Solution();
+    TPZVec<REAL> coord(2);
+    //cout << "Displacement solution in coord x = "<< coord[0] << " y ="  << coord[1] <<endl;
+    cout << "ux = "<< sol(0,0)<< " uy ="  << sol(1,0) <<endl;
 
 	// Post processing
 	TPZManVector<std::string> scalarnames(3), vecnames(1);
@@ -168,11 +172,19 @@ void SolveBendingClampedBeam(string filename)
     cout << "ux = "<< sol(0,0)<< " uy ="  << sol(1,0) <<endl;
 
 	// Post processing
-	TPZManVector<std::string> scalarnames(3), vecnames(1);
+	TPZManVector<std::string> scalarnames(3), vecnames(3);
 	scalarnames[0] = "SigmaX";
 	scalarnames[1] = "SigmaY";
 	scalarnames[2] = "TauXY";
+
+
+   //     if(!strcmp("NormalStress",name.c_str()))        return 23;
+  //  if(!strcmp("ShearStress",name.c_str()))        return 24;
+  //  if(!strcmp("NormalStrain",name.c_str()))        return 25;
+  //  if(!strcmp("ShearStrain",name.c_str()))        return 26;
 	vecnames[0] = "displacement";
+    vecnames[1] = "Strain";
+    vecnames[2] = "ShearStrain";
 	//vecnames[1] = "";
 	an.DefineGraphMesh(2,scalarnames,vecnames,filename);
 
@@ -180,7 +192,7 @@ void SolveBendingClampedBeam(string filename)
 }
 TPZGeoMesh *CreateGeoMeshBending()
 {
-    REAL co[4][2] = {{0.,0.},{1000,0},{1000,100},{0,100}};
+    REAL co[4][2] = {{0.,0.},{100,0},{100,20},{0,20}};
     long indices[1][4] = {{0,1,2,3}};
     TPZGeoEl *elvec[1];
     TPZGeoMesh *gmesh = new TPZGeoMesh();
@@ -222,16 +234,23 @@ TPZGeoMesh *CreateGeoMeshBending()
     gmesh->BuildConnectivity();
 
 
-    for(int d=0;d<2;d++) {
-    int nel = gmesh->NElements();
-    for (int iel=0; iel<nel; iel++) {
+    cout << "c" << endl;
+    for ( int d = 0; d<5; d++ )
+    {
+        int nel = gmesh->NElements();
         TPZManVector<TPZGeoEl *> subels;
-        TPZGeoEl *gel = gmesh->ElementVec()[iel];
-        gel->Divide(subels);
+        for ( int iel = 0; iel<nel; iel++ )
+        {
+            TPZGeoEl *gel = gmesh->ElementVec() [iel];
+            gel->Divide ( subels );
+        }
     }
-	}
 
-	return gmesh;
+    std::ofstream files ( "teste-mesh.vtk" );
+    TPZVTKGeoMesh::PrintGMeshVTK ( gmesh,files,false );
+    cout << "d" << endl;
+    return gmesh;
+
 }
 
 TPZCompMesh *CreateMeshBending(TPZGeoMesh *gmesh)
@@ -240,7 +259,7 @@ TPZCompMesh *CreateMeshBending(TPZGeoMesh *gmesh)
     cmesh->SetDefaultOrder(TPZCompEl::GetgOrder());
 
     //TPZElasticityMaterial(int id, REAL E, REAL nu, REAL fx, REAL fy, int planestress = 1);
-    TPZMaterial * mat = new TPZElasticityMaterial(1,10000.,0.2,0.,0.);//selfweigth
+    TPZMaterial * mat = new TPZElasticityMaterial(1,21000000.,0.3,0.,0.);//selfweigth
 
     cmesh->SetDimModel(2);
 
@@ -256,7 +275,7 @@ TPZCompMesh *CreateMeshBending(TPZGeoMesh *gmesh)
     bcnode = mat->CreateBC(mat,-3,3,val1,val2);//bottomrigth node restrictions
 
     val2(0,0)=0.;
-    val2(1,0)=-100.;
+    val2(1,0)=-1000.;
     bcload = mat->CreateBC(mat,-2,1,val1,val2);//-100 N in y direction node 4
 
 
@@ -342,7 +361,7 @@ TPZCompMesh *CreateMesh(TPZGeoMesh *gmesh) {
     cmesh->SetDefaultOrder(TPZCompEl::GetgOrder());
 //TPZElasticityMaterial(int id, REAL E, REAL nu, REAL fx, REAL fy, int planestress = 1);
     // Creating elasticity material
-    TPZMaterial * mat = new TPZElasticityMaterial(1,10000.,0.2,0.,-1.);//selfweigth
+    TPZMaterial * mat = new TPZElasticityMaterial(1,10.,0.,0.,-1.);//selfweigth
    // TPZMaterial * mat = new TPZElasticityMaterial(1,10000.,0.2,0.,0.);
 	// Creating four boundary condition
     TPZFMatrix<REAL> val1(2,2,0.),val2(2,1,0.);

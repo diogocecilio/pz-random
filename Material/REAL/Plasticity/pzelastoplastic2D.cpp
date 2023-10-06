@@ -644,9 +644,24 @@ void TPZMatElastoPlastic2D<T,TMEM>::ContributeBC(TPZMaterialData &data,
 
 		case 1: // Neumann condition
 			for(in = 0 ; in < phi.Rows(); in++) {
-				ef(nstate*in+0,0) += v2[0] * phi(in,0) * weight;
-				ef(nstate*in+1,0) += v2[1] * phi(in,0) * weight;
-			}
+
+        if(this->fwhichinternalforce == 0)
+          {
+              ef(nstate*in+0,0) += (v2[0] * phi(in,0) * weight)*this->ffactor;
+              ef(nstate*in+1,0) += (v2[1] * phi(in,0) * weight)*this->ffactor;
+          }
+          if(this->fwhichinternalforce == 1)
+          {
+            ef(in*nstate+0,0) += 0;
+            ef(in*nstate+1,0) += 0;
+          }
+          if(this->fwhichinternalforce == 2)
+          {
+              ef(nstate*in+0,0) += (v2[0] * phi(in,0) * weight)*this->ffactor;
+              ef(nstate*in+1,0) += (v2[1] * phi(in,0) * weight)*this->ffactor;
+          }
+
+          }
 			break;
 
 		case 2: // Mixed condition
