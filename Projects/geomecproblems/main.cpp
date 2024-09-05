@@ -25,17 +25,17 @@
 
 int main() {
 
-  // SlopeCphi slopecphi;
+   SlopeCphi slopecphi;
 
- //  slopecphi.run();
+   slopecphi.run();
 
-//     Slope slope;
+ //    Slope slope;
 //
 //     slope.run();
 
-   Footing foot;
+//   Footing foot;
 
-  foot.runfoot();
+//  foot.runfoot();
 
 
     return 0;

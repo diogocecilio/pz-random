@@ -447,7 +447,7 @@ REAL PlasticityTools::Solve(REAL tolfs,int numiterfs,REAL tolres,int numiterres,
     //REAL fs = analysis->IterativeProcessArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     //analysis->IterativeProcessLinearisedArcLength ( );
     REAL ndesirediters=7;
-     REAL llimit=0.04;
+     REAL llimit=l;
     REAL fs = analysis->IterativeProcessHybridArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge,ndesirediters,llimit );
    // REAL fs = analysis->IterativeProcessLinearisedArcLength ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );
     //REAL fs = analysis->IterativeProcessArcLengthWithLineSearch ( tolfs,numiterfs,tolres,numiterres,l,lambda0,converge );

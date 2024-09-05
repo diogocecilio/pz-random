@@ -67,9 +67,9 @@ int main()
     chrono::steady_clock sc;
     auto start = sc.now();
 
-    SolveMultiThread(MonteCarlo2,500,1000,12);
+   // SolveMultiThread(MonteCarlo2,500,1000,12);
    // MonteCarlo2 ( 0,1 );
-   //SolveDeterministic ( 0);
+   SolveDeterministic ( 0);
 
     auto end = sc.now();
     auto time_span = static_cast<chrono::duration<double>> ( end - start );
@@ -468,30 +468,34 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=3;
+    int ref=2;
     int porder=2;
-    int nref=2;
+    int nref=0;
 
     string file =filelocation;
-    file+="/tri-struc-v2.msh";
-    //file+="/mesh2x1cho.msh";
-    //file+="/mesh2x1choeq.msh";
-
+    //file+="/tri-struc-v2.msh";
+   // file+="/mesh2x1cho.msh";
+   // file+="/mesh2x1choeq.msh";
+    file+="/gidmesh.msh";
     std::vector<double> coordbc(3);
-    //coordbc[0]=30.;coordbc[1]=5.;coordbc[2]=5.;
-    coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
-    TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
+    coordbc[0]=30.;coordbc[1]=5.;coordbc[2]=5.;
+   // coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
+    coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=5.;
+    TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file,coordbc );
+    //CreateGMesh ( int ref,string file,std::vector<double> coordbc )
+    TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file,coordbc  );
 
-    REAL gammaagua=0.;
+    REAL gammaagua=0*10.;
     REAL gammasolo=20.;
-    REAL coes=10.;
-    REAL phi=30.*M_PI/180.;
+   // REAL coes=10.;
+   // REAL phi=30.*M_PI/180.;
+    REAL coes=23.;
+    REAL phi=1.*M_PI/180.;
     REAL E=20000.;
-    REAL nu =0.49;
+    REAL nu =0.3;
     int numthreads=10;
 
-    REAL tolfs =0.01;
+    REAL tolfs =0.1;
     int numiterfs =100;
     REAL tolres = 1.e-6;
     int numiterres =30;
@@ -500,8 +504,8 @@ void SolveDeterministic ( bool gimsrm )
 
 
     int iref;
-    lambda0=0.5;
-    l=1;
+    lambda0=0.1;
+    l=0.5;
     bool converge;
     cout << "Iniciando o refinamento da malha... " << endl;
     std::set<long> elindices2;
@@ -511,20 +515,20 @@ void SolveDeterministic ( bool gimsrm )
 
         PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
         std::set<long> elindices;
-        // REAL fsdummy = plastictoolstemp.ShearRed ( );
-         plastictoolstemp.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
+         REAL fsdummy = plastictoolstemp.ShearRed ( );
+        // plastictoolstemp.Solve ( tolfs,numiterfs,tolres,numiterres,l,lambda0 );
         //plastictoolstemp.IterativeProcessHybridArcLength( tolfs, numiterfs, tolres, numiterres, l, lambda0, converge);
         plastictoolstemp.ComputeElementDeformation();
         //plastictoolstemp.PRefineElementsAbove ( 0.0015,porder+iref,elindices );
-        plastictoolstemp.DivideElementsAbove ( 0.0015,elindices );
+        plastictoolstemp.DivideElementsAbove ( 0.001,elindices );
         gmeshpalstic=plastictoolstemp.fcmesh->Reference();
         gmeshdarcy=plastictoolstemp.fcmesh->Reference();
         // elindices2=elindices;
 
     }
 
-    l =1;
-    lambda0=0.5;
+    l =0.1;
+    lambda0=0.1;
     tolfs =0.01;
     numiterfs =100;
     tolres = 1.e-6;
@@ -534,12 +538,13 @@ void SolveDeterministic ( bool gimsrm )
 
     PlasticityTools plastictoolstemp2 ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
     //PlasticityTools plastictools ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
-    int setflux=0;
-    if ( setflux )
+    int setflux=1;
+    if ( false )
     {
 
+        cout << "Resolvendo problema de fluxo"<< endl;
         REAL H=10;
-        REAL Hw=0;
+        REAL Hw=10;
         REAL Ht=40.;
 
         DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder );
@@ -550,7 +555,7 @@ void SolveDeterministic ( bool gimsrm )
 
     }
 
-    if ( gimsrm )
+    if ( true )
     {
         cout << "Saindo do refinando e resolvendo na malha fina com o metodo da reducao da resistencia.. " << endl;
         plastictoolstemp2.ShearRed ( );
@@ -568,7 +573,7 @@ void SolveDeterministic ( bool gimsrm )
     TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
 
 
-    string vtk1 = "printdeterr.vtk";
+    string vtk1 = "printdeterrumgrau.vtk";
     plastictoolstemp2.PostPlasticity ( vtk1 );
 
 
