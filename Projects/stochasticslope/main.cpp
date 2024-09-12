@@ -468,7 +468,7 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=2;
+    int ref=3;
     int porder=2;
     int nref=0;
 
@@ -490,9 +490,9 @@ void SolveDeterministic ( bool gimsrm )
    // REAL coes=10.;
    // REAL phi=30.*M_PI/180.;
     REAL coes=23.;
-    REAL phi=1.*M_PI/180.;
+    REAL phi=0.01*M_PI/180.;
     REAL E=20000.;
-    REAL nu =0.3;
+    REAL nu =0.49;
     int numthreads=10;
 
     REAL tolfs =0.1;
@@ -573,7 +573,7 @@ void SolveDeterministic ( bool gimsrm )
     TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
 
 
-    string vtk1 = "printdeterrumgrau.vtk";
+    string vtk1 = "saida-talude.vtk";
     plastictoolstemp2.PostPlasticity ( vtk1 );
 
 
