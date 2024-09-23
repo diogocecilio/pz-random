@@ -468,8 +468,8 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=1;
-    int porder=2;
+    int ref=2;
+    int porder=3;
     int nref=0;
 
     string file =filelocation;
@@ -493,7 +493,7 @@ void SolveDeterministic ( bool gimsrm )
     REAL phi=0.01*M_PI/180.;
     REAL E=20000.;
     REAL nu =0.49;
-    int numthreads=10;
+    int numthreads=20;
 
     REAL tolfs =0.1;
     int numiterfs =100;

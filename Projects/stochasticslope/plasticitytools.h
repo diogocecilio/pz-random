@@ -400,7 +400,7 @@ void PlasticityTools::LoadingRamp (  REAL factor )
 
 }
 
-
+#include "TPZPardisoControl.h"
 TPZElastoPlasticAnalysis * PlasticityTools::CreateAnalysis (  )
 {
 
@@ -413,6 +413,8 @@ TPZElastoPlasticAnalysis * PlasticityTools::CreateAnalysis (  )
     ///Setting a direct solver
    TPZStepSolver<STATE> step;
     step.SetDirect ( ELDLt );
+
+    TPZPardisoControl<REAL> pardiso;
     //step.SetDirect ( ECholesky );
 
     long neq = fcmesh->NEquations();
@@ -607,7 +609,7 @@ REAL PlasticityTools::ShearRed ( )
         chrono::steady_clock sc;
         auto start = sc.now();
 
-         conv = anal->IterativeProcess ( cout, tol2, NumIter,linesearch,checkconv,iters );
+         conv = anal->IterativeProcess2 ( cout, tol2, NumIter,linesearch,checkconv,iters );
         norm = Norm ( anal->Rhs() );
 
 

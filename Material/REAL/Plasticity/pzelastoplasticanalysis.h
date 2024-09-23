@@ -93,7 +93,7 @@ public:
 	
 	bool IterativeProcess(std::ostream &out,REAL tol,int numiter, bool linesearch, bool checkconv,int &iters);
 
-	
+	bool IterativeProcess2 ( std::ostream &out,REAL tol,int numiter, bool linesearch, bool checkconv,int &iters );
 	
 	//Implements the cylindrical arc length method ref- Souza Neto 2009
 	virtual REAL IterativeProcessArcLength(REAL tol,int numiter,REAL tol2,int numiter2,REAL l,REAL lambda0,bool &converge);
