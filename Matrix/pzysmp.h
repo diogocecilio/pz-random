@@ -168,7 +168,7 @@ private:
 	 */
 	void RowLUUpdate(long sourcerow, long destrow);
 	
-protected:
+public:
 	long  *fIA;
 	long  *fJA;
 	TVar *fA;

@@ -60,7 +60,7 @@ class TPZSYsmpMatrix : public TPZMatrix<TVar>{
 				  const int FromCurrent = 0,const int direction = 1 ) ;
 	
 	
-private:
+public:
 	
 	void ComputeDiagonal();
 	
