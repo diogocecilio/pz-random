@@ -1,0 +1,88 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Mesh/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Mesh/TPZAgglomerateEl.h",
+				"Mesh/TPZCompElDisc.h",
+				"Mesh/TPZCompElLagrange.h",
+				"Mesh/TPZGeoElement.h",
+				"Mesh/TPZGeoElement.h.h",
+				"Mesh/TPZInterfaceEl.h",
+				"Mesh/TPZMultiphysicsInterfaceEl.h",
+				"Mesh/doxmesh.h",
+				"Mesh/pzcheckgeom.h",
+				"Mesh/pzcheckmesh.h",
+				"Mesh/pzcheckrestraint.h",
+				"Mesh/pzcmesh.h",
+				"Mesh/pzcompel.h",
+				"Mesh/pzcompelwithmem.h",
+				"Mesh/pzcondensedcompel.h",
+				"Mesh/pzconnect.h",
+				"Mesh/pzcreateapproxspace.h",
+				"Mesh/pzelchdiv.h",
+				"Mesh/pzelchdivbound2.h",
+				"Mesh/pzelctemp.h",
+				"Mesh/pzelementgroup.h",
+				"Mesh/pzelmat.h",
+				"Mesh/pzflowcmesh.h",
+				"Mesh/pzgeoel.h",
+				"Mesh/pzgeoelbc.h",
+				"Mesh/pzgeoelrefless.h",
+				"Mesh/pzgeoelrefless.h.h",
+				"Mesh/pzgeoelside.h",
+				"Mesh/pzgmesh.h",
+				"Mesh/pzgnode.h",
+				"Mesh/pzhdivfull.h",
+				"Mesh/pzhdivpressure.h",
+				"Mesh/pzhdivpressurebound.h",
+				"Mesh/pzintel.h",
+				"Mesh/pzinterpolationspace.h",
+				"Mesh/pzmeshid.h",
+				"Mesh/pzmultiphysicscompel.h",
+				"Mesh/pzmultiphysicselement.h",
+				"Mesh/pzreducedspace.h",
+				"Mesh/pzreferredcompel.h",
+				"Mesh/pzsubcmesh.h",
+				"Mesh/tpzagglomeratemesh.h",
+				"Mesh/tpzcompmeshreferred.h",
+				"Mesh/tpzgeoelmapped.h",
+				"Mesh/tpzgeoelrefpattern.h",
+				"Mesh/tpzgeoelrefpattern.h.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Mesh",
+		"source" : "Mesh"
+	}
+}

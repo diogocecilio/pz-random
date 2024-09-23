@@ -1,0 +1,52 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Topology/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Topology/PrismExtend.h",
+				"Topology/doxtopology.h",
+				"Topology/tpzcube.h",
+				"Topology/tpzline.h",
+				"Topology/tpzpoint.h",
+				"Topology/tpzprism.h",
+				"Topology/tpzpyramid.h",
+				"Topology/tpzquadrilateral.h",
+				"Topology/tpztetrahedron.h",
+				"Topology/tpztriangle.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Topology",
+		"source" : "Topology"
+	}
+}

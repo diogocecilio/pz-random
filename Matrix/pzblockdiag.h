@@ -83,7 +83,7 @@ public:
 	static int main();
     
     /** Fill the matrix with random values (non singular matrix) */
-    void AutoFill();
+    void AutoFill(int64_t neq, int64_t jeq, int symmetric);
 	
 private:
 	

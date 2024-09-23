@@ -1,0 +1,71 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Matrix/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Matrix/TPZCopySolve.h",
+				"Matrix/TPZPardisoSolver.h",
+				"Matrix/doxmatrix.h",
+				"Matrix/pzblock.h",
+				"Matrix/pzblockdiag.h",
+				"Matrix/pzbndmat.h",
+				"Matrix/pzdiffmatrix.h",
+				"Matrix/pzespmat.h",
+				"Matrix/pzfmatrix.h",
+				"Matrix/pzlink.h",
+				"Matrix/pzmatred.h",
+				"Matrix/pzmatrix.h",
+				"Matrix/pzmatrixid.h",
+				"Matrix/pzsbndmat.h",
+				"Matrix/pzseqsolver.h",
+				"Matrix/pzsespmat.h",
+				"Matrix/pzsfulmat.h",
+				"Matrix/pzshtmat.h",
+				"Matrix/pzskylmat.h",
+				"Matrix/pzskylmatpar.h",
+				"Matrix/pzskylnsymmat.h",
+				"Matrix/pzsolve.h",
+				"Matrix/pzspblockdiagpivot.h",
+				"Matrix/pzstencil.h",
+				"Matrix/pzstepsolver.h",
+				"Matrix/pzsysmp.h",
+				"Matrix/pzysmp.h",
+				"Matrix/tpzsparseblockdiagonal.h",
+				"Matrix/tpzverysparsematrix.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Matrix",
+		"source" : "Matrix"
+	}
+}

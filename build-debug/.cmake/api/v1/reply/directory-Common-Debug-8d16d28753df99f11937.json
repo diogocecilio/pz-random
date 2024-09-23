@@ -1,0 +1,52 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Common/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Common/TPZGuiInterface.h",
+				"Common/doxcommon.h",
+				"Common/fpo_exceptions.h",
+				"Common/pz_pthread.h",
+				"Common/pzdebug.h",
+				"Common/pzeltype.h",
+				"Common/pzerror.h",
+				"Common/pzreal.h",
+				"Common/pzstream.h",
+				"Common/pzversion.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Common",
+		"source" : "Common"
+	}
+}

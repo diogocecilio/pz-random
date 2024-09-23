@@ -44,7 +44,7 @@
 #include "darcytools.h"
 #include "plasticitytools.h"
 #include "fieldtools.h"
-
+#define EIGEN_USE_MKL_ALL
 string filelocation = "/home/diogo/projects/pz-random/data";
 
 
@@ -468,7 +468,7 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=3;
+    int ref=1;
     int porder=2;
     int nref=0;
 

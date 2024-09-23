@@ -1,0 +1,68 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Post/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Post/TPZProjectEllipse.h",
+				"Post/TPZVTKGeoMesh.h",
+				"Post/doxpost.h",
+				"Post/pzcompelpostproc.h",
+				"Post/pzdxmesh.h",
+				"Post/pzgradientreconstruction.h",
+				"Post/pzgraphel.h",
+				"Post/pzgraphel1d.h",
+				"Post/pzgraphel1dd.h",
+				"Post/pzgraphelq2d.h",
+				"Post/pzgraphelq2dd.h",
+				"Post/pzgraphelq3dd.h",
+				"Post/pzgraphmesh.h",
+				"Post/pzgraphnode.h",
+				"Post/pzmvmesh.h",
+				"Post/pzpostprocanalysis.h",
+				"Post/pzpostprocmat.h",
+				"Post/pztrigraph.h",
+				"Post/pztrigraphd.h",
+				"Post/pzv3dmesh.h",
+				"Post/pzvisualmatrix.h",
+				"Post/pzvtkmesh.h",
+				"Post/tpzgraphelprismmapped.h",
+				"Post/tpzgraphelpyramidmapped.h",
+				"Post/tpzgraphelt2dmapped.h",
+				"Post/tpzgraphelt3d.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Post",
+		"source" : "Post"
+	}
+}

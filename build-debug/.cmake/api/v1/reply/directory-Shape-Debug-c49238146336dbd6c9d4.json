@@ -1,0 +1,53 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Shape/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Shape/TPZShapeDisc.h",
+				"Shape/doxshape.h",
+				"Shape/pzshapecube.h",
+				"Shape/pzshapeextend.h",
+				"Shape/pzshapelinear.h",
+				"Shape/pzshapepiram.h",
+				"Shape/pzshapepoint.h",
+				"Shape/pzshapeprism.h",
+				"Shape/pzshapequad.h",
+				"Shape/pzshapetetra.h",
+				"Shape/pzshapetriang.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Shape",
+		"source" : "Shape"
+	}
+}

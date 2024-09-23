@@ -1,0 +1,62 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Material/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Material/TPZElast3Dnlinear.h",
+				"Material/TPZLagrangeMultiplier.h",
+				"Material/TPZLinearConvecDiff.h",
+				"Material/TPZMatDualHybridPoisson.h",
+				"Material/TPZMatLaplacian.h",
+				"Material/TPZReynoldsFlow.h",
+				"Material/doxmaterial.h",
+				"Material/pzbndcond.h",
+				"Material/pzconslaw.h",
+				"Material/pzdiscgal.h",
+				"Material/pzl2projection.h",
+				"Material/pzmat1dlin.h",
+				"Material/pzmat2dlin.h",
+				"Material/pzmaterial.h",
+				"Material/pzmaterialdata.h",
+				"Material/pzmaterialid.h",
+				"Material/pzpoisson3d.h",
+				"Material/pztransientmat.h",
+				"Material/pzuncoupledmultiphysics.h",
+				"Material/tpzoutofrange.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Material",
+		"source" : "Material"
+	}
+}

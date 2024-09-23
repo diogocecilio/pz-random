@@ -1,0 +1,56 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"SubStruct/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"SubStruct/TPZTimeTemp.h",
+				"SubStruct/TPZfTime.h",
+				"SubStruct/doxsubstrmatrix.h",
+				"SubStruct/pzdohrstructmatrix.h",
+				"SubStruct/tpzdohrassemblelist.h",
+				"SubStruct/tpzdohrassembly.h",
+				"SubStruct/tpzdohrmatrix.h",
+				"SubStruct/tpzdohrprecond.h",
+				"SubStruct/tpzdohrsubstruct.h",
+				"SubStruct/tpzdohrsubstructCondense.h",
+				"SubStruct/tpzgensubstruct.h",
+				"SubStruct/tpzmatredstructmatrix.h",
+				"SubStruct/tpzpairstructmatrix.h",
+				"SubStruct/tpzparallelenviroment.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "SubStruct",
+		"source" : "SubStruct"
+	}
+}

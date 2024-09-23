@@ -107,7 +107,19 @@ void TPZStructMatrixST::Assemble(TPZMatrix<STATE> & stiffness, TPZFMatrix<STATE>
             this->Serial_Assemble(stiffness,rhs,guiInterface);
         }
     }
+//  	std::ofstream sout ("matrix2.dat");
+//     std::ofstream sout2 ("vector2.dat");
+// //    stiffness.Print("st= ",sout,EMathematicaInput);
+// // 	rhs.Print("rhs = ", sout,EMathematicaInput);
+//     stiffness.Print("",sout,EFormatted);
+//  	rhs.Print("",sout2,EFormatted);
 	ass_stiff.stop();
+
+
+      //      std::ofstream sout1("matrix.dat");
+     //       std::ofstream sout2("vector.dat");
+      //  stiffness.Print("mat =",sout1,EFormatted);
+      //  rhs.Print("rhs=", sout2,EFormatted);
 }
 
 void TPZStructMatrixST::Assemble(TPZFMatrix<STATE> & rhs,TPZAutoPointer<TPZGuiInterface> guiInterface){
@@ -699,6 +711,11 @@ void TPZStructMatrixST::MultiThread_Assemble(TPZMatrix<STATE> & mat, TPZFMatrix<
         LOGPZ_DEBUG(loggerCheck,sout.str())
     }
 #endif
+
+
+
+
+
 }
 
 

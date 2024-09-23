@@ -1,0 +1,54 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Refine/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Refine/TPZRefCube.h",
+				"Refine/TPZRefLinear.h",
+				"Refine/TPZRefPattern.h",
+				"Refine/TPZRefPatternDataBase.h",
+				"Refine/TPZRefPatternTools.h",
+				"Refine/doxrefine.h",
+				"Refine/pzrefpoint.h",
+				"Refine/pzrefprism.h",
+				"Refine/pzrefpyram.h",
+				"Refine/pzrefquad.h",
+				"Refine/pzreftetrahedra.h",
+				"Refine/pzreftriangle.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Refine",
+		"source" : "Refine"
+	}
+}

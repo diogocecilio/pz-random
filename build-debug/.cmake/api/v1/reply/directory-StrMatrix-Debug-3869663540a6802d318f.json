@@ -1,0 +1,63 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"StrMatrix/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"StrMatrix/KLStrMatrix.h",
+				"StrMatrix/TPBSpStructMatrix.h",
+				"StrMatrix/TPZFrontStructMatrix.h",
+				"StrMatrix/TPZParFrontStructMatrix.h",
+				"StrMatrix/TPZParSkylineStructMatrix.h",
+				"StrMatrix/TPZSkylineNSymStructMatrix.h",
+				"StrMatrix/TPZSpStructMatrix.h",
+				"StrMatrix/doxstrmatrix.h",
+				"StrMatrix/pzbdstrmatrix.h",
+				"StrMatrix/pzbstrmatrix.h",
+				"StrMatrix/pzequationfilter.h",
+				"StrMatrix/pzfstrmatrix.h",
+				"StrMatrix/pzsbstrmatrix.h",
+				"StrMatrix/pzskylstrmatrix.h",
+				"StrMatrix/pzstrmatrix.h",
+				"StrMatrix/pzstrmatrixcs.h",
+				"StrMatrix/pzstrmatrixgc.h",
+				"StrMatrix/pzstrmatrixot.h",
+				"StrMatrix/pzstrmatrixst.h",
+				"StrMatrix/pzstrmatrixtbb.h",
+				"StrMatrix/tpzsparseblockdiagonalstructmatrix.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "StrMatrix",
+		"source" : "StrMatrix"
+	}
+}

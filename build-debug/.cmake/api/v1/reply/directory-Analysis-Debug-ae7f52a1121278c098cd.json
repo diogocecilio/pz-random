@@ -1,0 +1,54 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Analysis/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 13,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Analysis/TPZNLMultGridAnalysis.h",
+				"Analysis/doxanalysis.h",
+				"Analysis/pzanalysis.h",
+				"Analysis/pzanalysiserror.h",
+				"Analysis/pzblackoilanalysis.h",
+				"Analysis/pzeuleranalysis.h",
+				"Analysis/pzmganalysis.h",
+				"Analysis/pznonlinanalysis.h",
+				"Analysis/pzsmanal.h",
+				"Analysis/pzsmfrontalanal.h",
+				"Analysis/pztransientanalysis.h",
+				"Analysis/tpzbiharmonicestimator.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Analysis",
+		"source" : "Analysis"
+	}
+}

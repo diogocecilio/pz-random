@@ -1,0 +1,56 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Geom/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Geom/TPZGeoCube.h",
+				"Geom/TPZGeoExtend.h",
+				"Geom/TPZGeoLinear.h",
+				"Geom/doxgeometry.h",
+				"Geom/pzgeopoint.h",
+				"Geom/pzgeoprism.h",
+				"Geom/pzgeopyramid.h",
+				"Geom/pzgeoquad.h",
+				"Geom/pzgeotetrahedra.h",
+				"Geom/pzgeotriangle.h",
+				"Geom/pznoderep.h",
+				"Geom/pznoderep.h.h",
+				"Geom/pzshapeextend.h",
+				"Geom/tpzgeoblend.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Geom",
+		"source" : "Geom"
+	}
+}

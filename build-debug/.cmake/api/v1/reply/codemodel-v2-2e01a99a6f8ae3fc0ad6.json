@@ -1,0 +1,449 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						14,
+						16,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24,
+						25,
+						26
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-78fd1c8c7bae6eb708fc.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "PerfUtil",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-PerfUtil-Debug-082a8c36408384377a62.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "PerfUtil"
+				},
+				{
+					"build" : "Util",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Util-Debug-8b3f49e69e7c59fe1316.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Util"
+				},
+				{
+					"build" : "Common",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Common-Debug-8d16d28753df99f11937.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Common"
+				},
+				{
+					"build" : "Save",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Save-Debug-4f6737917b0850ea61c7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Save"
+				},
+				{
+					"build" : "Integral",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Integral-Debug-3939ca4a5d0bad1c4ca7.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Integral"
+				},
+				{
+					"build" : "LinearSolvers",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-LinearSolvers-Debug-8f438c83d7b79c56f26d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "LinearSolvers"
+				},
+				{
+					"build" : "Matrix",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Matrix-Debug-5146531d1f13dff5810b.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Matrix"
+				},
+				{
+					"build" : "Topology",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Topology-Debug-01280494b3aea8319bf0.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Topology"
+				},
+				{
+					"build" : "Geom",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Geom-Debug-4d70dd388116aa1b8d90.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Geom"
+				},
+				{
+					"build" : "SpecialMaps",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-SpecialMaps-Debug-58d365f60942de5d9b67.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "SpecialMaps"
+				},
+				{
+					"build" : "Shape",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Shape-Debug-c49238146336dbd6c9d4.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Shape"
+				},
+				{
+					"build" : "Refine",
+					"childIndexes" : 
+					[
+						13
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Refine-Debug-3fccf42eb809a006ca34.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Refine"
+				},
+				{
+					"build" : "Refine/RefPatterns",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Refine.RefPatterns-Debug-ff8d86eecad8ad1bdcc6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 12,
+					"projectIndex" : 0,
+					"source" : "Refine/RefPatterns"
+				},
+				{
+					"build" : "External",
+					"childIndexes" : 
+					[
+						15
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-External-Debug-7a6e2459b3b577a2d072.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "External"
+				},
+				{
+					"build" : "External/sloan",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-External.sloan-Debug-ff64215cb2eac3777f49.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 14,
+					"projectIndex" : 0,
+					"source" : "External/sloan"
+				},
+				{
+					"build" : "Material",
+					"childIndexes" : 
+					[
+						17
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Material-Debug-d9a019fae5c9b57d8f1d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Material"
+				},
+				{
+					"build" : "Material/REAL",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Material.REAL-Debug-cc99bad52797facfc3d3.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 16,
+					"projectIndex" : 0,
+					"source" : "Material/REAL"
+				},
+				{
+					"build" : "Mesh",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Mesh-Debug-1af5f0bae4018ca97a63.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Mesh"
+				},
+				{
+					"build" : "Analysis",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Analysis-Debug-ae7f52a1121278c098cd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Analysis"
+				},
+				{
+					"build" : "Multigrid",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Multigrid-Debug-a9de8c2de63e77a90664.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Multigrid"
+				},
+				{
+					"build" : "Post",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Post-Debug-9b82235db7d5984ffc3e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Post"
+				},
+				{
+					"build" : "Frontal",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Frontal-Debug-12121689fd80bef585e6.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Frontal"
+				},
+				{
+					"build" : "StrMatrix",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-StrMatrix-Debug-3869663540a6802d318f.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "StrMatrix"
+				},
+				{
+					"build" : "Pre",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-Pre-Debug-f558c0e053be6e6cf42e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Pre"
+				},
+				{
+					"build" : "SubStruct",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-SubStruct-Debug-43151a08a265e36c90bd.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "SubStruct"
+				},
+				{
+					"build" : "lib",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-lib-Debug-8ef98f3895bf7b2417e1.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "2.8.0"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "lib",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6,
+						7,
+						8,
+						9,
+						10,
+						11,
+						12,
+						13,
+						14,
+						15,
+						16,
+						17,
+						18,
+						19,
+						20,
+						21,
+						22,
+						23,
+						24,
+						25,
+						26
+					],
+					"name" : "PZ",
+					"targetIndexes" : 
+					[
+						0,
+						1
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "DOXYGEN_Files::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-DOXYGEN_Files-Debug-44cbe9d9c772d2f5484a.json",
+					"name" : "DOXYGEN_Files",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 26,
+					"id" : "pz::@306ed2d68c6501e8728f",
+					"jsonFile" : "target-pz-Debug-b5c3be918ea12833d6dd.json",
+					"name" : "pz",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/diogo/projects/pz-random/build-debug",
+		"source" : "/home/diogo/projects/pz-random"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 3
+	}
+}

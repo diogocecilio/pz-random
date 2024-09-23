@@ -1,0 +1,58 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Pre/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 13,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Pre/TPZExtendGridDimension.h",
+				"Pre/TPZGMSHReadMesh.h",
+				"Pre/TPZGenSpecialGrid.h",
+				"Pre/TPZMHMeshControl.h",
+				"Pre/TPZReadGIDGrid.h",
+				"Pre/doxpre.h",
+				"Pre/pzbuildmultiphysicsmesh.h",
+				"Pre/pzdatafi.h",
+				"Pre/pzgengrid.h",
+				"Pre/pzhyperplane.h",
+				"Pre/pzidentifyrefpattern.h",
+				"Pre/pzpargrid.h",
+				"Pre/pzreadmesh.h",
+				"Pre/pzreadmeshhr.h",
+				"Pre/pzreadtetgen.h",
+				"Pre/tpzhierarquicalgrid.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Pre",
+		"source" : "Pre"
+	}
+}

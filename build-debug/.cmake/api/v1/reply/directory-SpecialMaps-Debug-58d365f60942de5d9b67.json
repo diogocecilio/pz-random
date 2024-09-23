@@ -1,0 +1,61 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"SpecialMaps/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"SpecialMaps/TPZQuadSphere.h",
+				"SpecialMaps/TPZQuadTorus.h",
+				"SpecialMaps/TPZTriangleSphere.h",
+				"SpecialMaps/TPZTriangleTorus.h",
+				"SpecialMaps/TPZWavyLine.h",
+				"SpecialMaps/convtest.h",
+				"SpecialMaps/tpzarc3d.h",
+				"SpecialMaps/tpzblendnaca.h",
+				"SpecialMaps/tpzchangeel.h",
+				"SpecialMaps/tpzellipse3d.h",
+				"SpecialMaps/tpzgeomid.h",
+				"SpecialMaps/tpzmathtools.h",
+				"SpecialMaps/tpzquadraticcube.h",
+				"SpecialMaps/tpzquadraticline.h",
+				"SpecialMaps/tpzquadraticprism.h",
+				"SpecialMaps/tpzquadraticpyramid.h",
+				"SpecialMaps/tpzquadraticquad.h",
+				"SpecialMaps/tpzquadratictetra.h",
+				"SpecialMaps/tpzquadratictrig.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "SpecialMaps",
+		"source" : "SpecialMaps"
+	}
+}

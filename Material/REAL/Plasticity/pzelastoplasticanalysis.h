@@ -6,6 +6,14 @@
 #ifndef ELASTOPLASTICANALYSIS_H
 #define ELASTOPLASTICANALYSIS_H
 
+
+#include <Eigen/Sparse>
+#include <unsupported/Eigen/SparseExtra>
+#include <iostream>
+#include <Eigen/OrderingMethods>
+#include <Eigen/PardisoSupport>
+
+
 #include "pznonlinanalysis.h"
 #include "pzcompel.h"
 #include "TPZGeoElement.h"
@@ -555,7 +563,7 @@ public:
     }
     
     
- 
+
 inline void SolveEigenSparse ( int type, TPZAutoPointer<TPZMatrix<REAL> > A, TPZFMatrix<REAL> b, TPZFMatrix<REAL>& x )
 {
 
@@ -592,10 +600,14 @@ inline void SolveEigenSparse ( int type, TPZAutoPointer<TPZMatrix<REAL> > A, TPZ
 		xx = solver.solve ( bbb );
        // xx = solver.compute ( AA ).solve ( bbb );
     } else if ( type==1 ) {
-        SparseLU< SparseMatrix<double> > solver2;
-        solver2.analyzePattern ( AA );
-        solver2.factorize ( AA );
-        xx = solver2.solve ( bbb );
+
+        PardisoLU< SparseMatrix<double> > solverpara;
+
+        //solverpara.pardisoParameterArray()[59] = 1;
+        //SparseLU< SparseMatrix<double> > solverpara;
+        solverpara.analyzePattern ( AA );
+        solverpara.factorize ( AA );
+        xx = solverpara.solve ( bbb );
     } else if ( type==2 ) {
         ConjugateGradient<SparseMatrix<double>, Lower|Upper> cg;
 		cg.analyzePattern ( AA );
@@ -605,6 +617,7 @@ inline void SolveEigenSparse ( int type, TPZAutoPointer<TPZMatrix<REAL> > A, TPZ
         //std::cout << "estimated error: " << cg.error()      << std::endl;
     }
     else if ( type==3 ) {
+       // PardisoLDLT< SparseMatrix<double> > solver;
         SimplicialLDLT<SparseMatrix<double> > solver;
 		solver.analyzePattern ( AA );
         solver.factorize ( AA );

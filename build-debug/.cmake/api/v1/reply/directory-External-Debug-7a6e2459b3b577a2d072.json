@@ -1,0 +1,51 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"External/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"External/TPZBoostGraph.h",
+				"External/TPZCutHillMcKee.h",
+				"External/TPZSloanRenumbering.h",
+				"External/fblaswr.h",
+				"External/pzmetis.h",
+				"External/pzrenumbering.h",
+				"External/pzsloan.h",
+				"External/rcm.h",
+				"External/tpznodesetcompute.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "External",
+		"source" : "External"
+	}
+}

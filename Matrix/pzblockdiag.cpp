@@ -580,28 +580,76 @@ void TPZBlockDiagonal<TVar>::UpdateFrom(TPZAutoPointer<TPZMatrix<TVar> > mat)
 }
 
 /** Fill the matrix with random values (non singular matrix) */
+// template<class TVar>
+// void TPZBlockDiagonal<TVar>::AutoFill() {
+//
+// 	long b, bsize, eq = 0, pos;
+// 	long nb = fBlockSize.NElements(), r, c;
+// 	for ( b=0; b<nb; b++) {
+// 		pos= fBlockPos[b];
+// 		bsize = fBlockSize[b];
+// 		for(r=0; r<bsize; r++) {
+//             float sum = 0.;
+// 			for(c=0; c<bsize; c++) {
+//                 float val = ((float)rand())/RAND_MAX;
+// 				fStorage[pos+c+r*bsize] = (TVar)(val);
+//                 if(c!= r) sum += fabs(val);
+// 			}
+//             if (fabs(fStorage[pos+r+r*bsize]) < sum) {
+//                 fStorage[pos+r+r*bsize] = (TVar)(sum + (float)1.);
+//             }
+// 		}
+// 		eq += bsize;
+// 	}
+// }
+/** Fill the matrix with random values (non singular matrix) */
 template<class TVar>
-void TPZBlockDiagonal<TVar>::AutoFill() {
-
-	long b, bsize, eq = 0, pos;
-	long nb = fBlockSize.NElements(), r, c;
+void TPZBlockDiagonal<TVar>::AutoFill(int64_t neq, int64_t jeq, int symmetric) {
+    if (neq != jeq) {
+        DebugStop();
+    }
+    TPZStack<int> blsizes;
+    int64_t totalsize = 0;
+    while (totalsize < neq) {
+        int64_t blsize = (neq*rand())/RAND_MAX;
+        blsize = blsize < neq-totalsize ? blsize : neq-totalsize;
+        blsizes.Push(blsize);
+        totalsize += blsize;
+    }
+    Initialize(blsizes);
+    // Initialize the blocksizes!!
+	int64_t b, bsize, eq = 0, pos;
+	int64_t nb = fBlockSize.NElements(), r, c;
 	for ( b=0; b<nb; b++) {
 		pos= fBlockPos[b];
 		bsize = fBlockSize[b];
-		for(r=0; r<bsize; r++) {
+		for(c=0; c<bsize; c++) {
             float sum = 0.;
-			for(c=0; c<bsize; c++) {
-                float val = ((float)rand())/RAND_MAX;
-				fStorage[pos+c+r*bsize] = (TVar)(val);
+            r=0;
+            if (symmetric == 1) {
+                for (r=0; r<c; r++) {
+                    fStorage[pos+c+r*bsize]=fStorage[pos+r+c*bsize];
+                    sum += fabs(fStorage[pos+r+c*bsize]);
+                }
+            }
+			for(; r<bsize; r++) {
+				auto val = ((float)rand())/RAND_MAX;
+				fStorage[pos+c+r*bsize] = (val);
                 if(c!= r) sum += fabs(val);
 			}
-            if (fabs(fStorage[pos+r+r*bsize]) < sum) {
-                fStorage[pos+r+r*bsize] = (TVar)(sum + (float)1.);
+            //totototo
+//            if(r==4)
+//            {
+//                std::cout << "sum " << sum << std::endl;
+//            }
+            if (fabs(fStorage[pos+c+c*bsize]) < sum) {
+                fStorage[pos+c+c*bsize] = (TVar)(sum + 1.);
             }
 		}
 		eq += bsize;
 	}
 }
+
 
 template class TPZBlockDiagonal<float>;
 template class TPZBlockDiagonal<double>;

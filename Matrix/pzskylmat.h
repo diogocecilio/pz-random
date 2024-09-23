@@ -209,7 +209,11 @@ public:
     int Subst_Diag     ( TPZFMatrix<TVar> *b ) const;
     // @}
 	
-    virtual void AutoFill();
+     virtual void AutoFill(int64_t nrow, int64_t ncol, int symmetric);
+    //virtual void AutoFill();
+
+    //template <class TVar>
+    //virtual void AutoFill(int64_t nrow, int64_t ncol, int symmetric) override;
 	
     virtual int ClassId() const;
     
@@ -454,7 +458,8 @@ public:
 	// @}
 	
 	//void TestSpeed(int col, int prevcol);
-	virtual void AutoFill() ;
+	//virtual void AutoFill() ;
+    virtual void AutoFill(int64_t nrow, int64_t ncol, int symmetric) ;
 	
 	virtual int ClassId() const;
     /**

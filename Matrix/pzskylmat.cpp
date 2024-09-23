@@ -1529,10 +1529,35 @@ void TPZSkylMatrix<TVar>::DecomposeColumn2(long col, long prevcol)
     }
 }
 
+// template <class TVar>
+// void TPZSkylMatrix<TVar>::AutoFill() {
+//     std::cout << __PRETTY_FUNCTION__ << " please implement me!\n";
+//     DebugStop();
+// }
 template <class TVar>
-void TPZSkylMatrix<TVar>::AutoFill() {
-    std::cout << __PRETTY_FUNCTION__ << " please implement me!\n";
-    DebugStop();
+void TPZSkylMatrix<TVar>::AutoFill(int64_t nrow, int64_t ncol, int symmetric) {
+    if (nrow != ncol || !symmetric)
+    {
+        DebugStop();
+    }
+    TPZMatrix<TVar>::Redim(nrow,ncol);
+    TPZVec<int64_t> skyline(nrow);
+    fElem.resize(nrow+1);
+    fElem.Fill(0);
+    for (int64_t i=0; i<nrow; i++) {
+        skyline[i]=(i*(rand()+RAND_MAX/2))/RAND_MAX;
+    }
+    InitializeElem(skyline,fStorage,fElem);
+
+    for (int64_t i=0; i<nrow; i++) {
+        TVar sum = 0.;
+        for (int64_t j=skyline[i]; j<i; j++) {
+            TVar val = ((TVar)rand())/RAND_MAX;
+            PutVal(j,i,val);
+            sum += fabs(val);
+        }
+        PutVal(i,i,sum+1.);
+    }
 }
 
 template<class TVar>
@@ -3232,10 +3257,46 @@ void TPZSkylMatrix<TVar>::DecomposeColumn2(long col, long prevcol){
     }
 }
 
+// template <class TVar>
+// void TPZSkylMatrix<TVar>::AutoFill() {
+//     std::cout << __PRETTY_FUNCTION__ << " please implement me!\n";
+//     DebugStop();
+// }
 template <class TVar>
-void TPZSkylMatrix<TVar>::AutoFill() {
-    std::cout << __PRETTY_FUNCTION__ << " please implement me!\n";
-    DebugStop();
+void TPZSkylMatrix<TVar>::AutoFill(int64_t nrow, int64_t ncol, int symmetric) {
+    if (nrow != ncol || !symmetric)
+    {
+        DebugStop();
+    }
+    TPZMatrix<TVar>::Redim(nrow,ncol);
+    TPZVec<int64_t> skyline(nrow);
+    fElem.resize(nrow+1);
+    fElem.Fill(0);
+    for (int64_t i=0; i<nrow; i++) {
+        skyline[i]=(i*(rand()))/RAND_MAX;
+    }
+//    std::cout << "skyline " << skyline << std::endl;
+    InitializeElem(skyline,fStorage,fElem);
+
+    for (int64_t i=0; i<nrow; i++) {
+        TVar sum = 0.;
+        for (int64_t j=skyline[i]; j<i; j++) {
+            TVar val = ((float)rand())/RAND_MAX;
+            PutVal(j,i,val);
+            sum += fabs(val);
+        }
+        PutVal(i,i,sum+(TVar)1.);
+    }
+    for (int64_t i=0; i<nrow; i++) {
+        TVar sum = (TVar)0.;
+        for (int64_t j=0; j<nrow; j++) {
+            TVar val;
+            val = GetVal(j,i);
+            sum += fabs(val);
+        }
+        PutVal(i,i,sum+(TVar)1.);
+    }
+
 }
 
 template<class TVar>

@@ -1,0 +1,50 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"PerfUtil/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"PerfUtil/arglib.h",
+				"PerfUtil/clock_timer.h",
+				"PerfUtil/csvtable.h",
+				"PerfUtil/cycle_timer.h",
+				"PerfUtil/pz_gettime.h",
+				"PerfUtil/run_stats_table.h",
+				"PerfUtil/stats_recorder.h",
+				"PerfUtil/timing_analysis.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "PerfUtil",
+		"source" : "PerfUtil"
+	}
+}

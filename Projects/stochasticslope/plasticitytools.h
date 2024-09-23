@@ -406,21 +406,14 @@ TPZElastoPlasticAnalysis * PlasticityTools::CreateAnalysis (  )
 
     TPZElastoPlasticAnalysis * analysis =  new TPZElastoPlasticAnalysis ( fcmesh ); // Create analysis
 
- //   analysis->SetBiCGStab(10,1.e-6);
-
     TPZSkylineStructMatrix matskl ( fcmesh );
-    //TPZFStructMatrix matskl ( cmesh );
 
     matskl.SetNumThreads ( fnumthreads );
 
-  //  analysis->SetStructuralMatrix ( matskl );
-
     ///Setting a direct solver
-    TPZStepSolver<STATE> step;
+   TPZStepSolver<STATE> step;
     step.SetDirect ( ELDLt );
     //step.SetDirect ( ECholesky );
-
-
 
     long neq = fcmesh->NEquations();
     TPZVec<long> activeEquations;
@@ -430,10 +423,32 @@ TPZElastoPlasticAnalysis * PlasticityTools::CreateAnalysis (  )
     matskl.EquationFilter() = filter;
     analysis->SetStructuralMatrix(matskl);
 
+
     analysis->SetSolver ( step );
 
-
     return analysis;
+
+//
+//     analysis->SetSolver ( step );
+
+   // TPZStepSolver<REAL> step ( matskl.Create() );
+//     TPZStepSolver<REAL> precond ( step );
+//     int64_t numiterpre =4;
+//     int64_t numiter = 100;
+//     double overrelax = 1.1;
+//     double tol = 1e-2;
+//     precond.SetSSOR ( numiterpre,overrelax,tol,0 );
+
+   // step.SetBiCGStab(numiter, precond,tol, 0);
+  //  TPZStepSolver<STATE> precond(step);
+  //  precond.SetDirect ( ELDLt );
+   // //step.SetDirect ( ECholesky );
+   // int64_t numiter = 100;
+   //  double tol = 1e-2;
+   // step.SetCG ( numiter,precond,tol,0 );
+
+
+
 
 }
 

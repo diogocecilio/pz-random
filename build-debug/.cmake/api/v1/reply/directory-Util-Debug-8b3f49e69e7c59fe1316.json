@@ -1,0 +1,69 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Util/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Util/TPZSemaphore.h",
+				"Util/TPZThreadTools.h",
+				"Util/TPZTimer.h",
+				"Util/checkconv.h",
+				"Util/doxutil.h",
+				"Util/pzadmchunk.h",
+				"Util/pzadmchunkthreadsafe.h",
+				"Util/pzaxestools.h",
+				"Util/pzcheckconsistency.h",
+				"Util/pzchunk.h",
+				"Util/pzfunction.h",
+				"Util/pzgradient.h",
+				"Util/pzline.h",
+				"Util/pzlog.h",
+				"Util/pzmanvector.h",
+				"Util/pznuma.h",
+				"Util/pznumeric.h",
+				"Util/pzpix.h",
+				"Util/pzplane.h",
+				"Util/pzpolynomial.h",
+				"Util/pzstack.h",
+				"Util/pzstring.h",
+				"Util/pzvec.h",
+				"Util/pzvec_extras.h",
+				"Util/tpzautopointer.h",
+				"Util/tpzpagemigrationmanager.h",
+				"Util/tpzpermutation.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Util",
+		"source" : "Util"
+	}
+}

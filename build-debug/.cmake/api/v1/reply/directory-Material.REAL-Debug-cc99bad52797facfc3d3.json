@@ -1,0 +1,97 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"install"
+		],
+		"files" : 
+		[
+			"Material/REAL/CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 4,
+				"parent" : 0
+			}
+		]
+	},
+	"installers" : 
+	[
+		{
+			"backtrace" : 1,
+			"component" : "Unspecified",
+			"destination" : "pzlib/include",
+			"paths" : 
+			[
+				"Material/REAL/TPZConsLawTest.h",
+				"Material/REAL/TPZDarcyFlow.h",
+				"Material/REAL/TPZDarcyFlowIsoPerm.h",
+				"Material/REAL/TPZDiffusionConsLaw.h",
+				"Material/REAL/TPZEuler.h",
+				"Material/REAL/TPZFVHybrid.h",
+				"Material/REAL/TPZIsotropicPermeability.h",
+				"Material/REAL/TPZLinearConvection.h",
+				"Material/REAL/TPZMatElasticity2D.h",
+				"Material/REAL/TPZMulticamadaOrtho.h",
+				"Material/REAL/TPZPlacaOrthotropic.h",
+				"Material/REAL/eulerdif.h",
+				"Material/REAL/mixedpoisson.h",
+				"Material/REAL/pzartdiff.h",
+				"Material/REAL/pzausmflux.h",
+				"Material/REAL/pzbctension.h",
+				"Material/REAL/pzbiharmonic.h",
+				"Material/REAL/pzblackoil2p3d.h",
+				"Material/REAL/pzburger.h",
+				"Material/REAL/pzconvectionproblem.h",
+				"Material/REAL/pzcoupledtransportdarcy.h",
+				"Material/REAL/pzcoupledtransportdarcyBC.h",
+				"Material/REAL/pzdarcymatwithmem.h",
+				"Material/REAL/pzdarcymem.h",
+				"Material/REAL/pzelasAXImat.h",
+				"Material/REAL/pzelasmat.h",
+				"Material/REAL/pzelasmatwithmem.h",
+				"Material/REAL/pzelast3d.h",
+				"Material/REAL/pzelasthybrid.h",
+				"Material/REAL/pzelasticmem.h",
+				"Material/REAL/pzeuler.h",
+				"Material/REAL/pzeulerconslaw.h",
+				"Material/REAL/pzgradientflux.h",
+				"Material/REAL/pzincnskeps.h",
+				"Material/REAL/pzmaterialcoupling.h",
+				"Material/REAL/pzmathyperelastic.h",
+				"Material/REAL/pzmatmixedpoisson3d.h",
+				"Material/REAL/pzmatorthotropic.h",
+				"Material/REAL/pzmatplaca2.h",
+				"Material/REAL/pzmattest.h",
+				"Material/REAL/pzmattest3d.h",
+				"Material/REAL/pzmatwithmem.h",
+				"Material/REAL/pzmultiphase.h",
+				"Material/REAL/pzmultplaca.h",
+				"Material/REAL/pznlmat1d.h",
+				"Material/REAL/pznlmat1drotatedengstrain.h",
+				"Material/REAL/pznonlinbiharmonic.h",
+				"Material/REAL/pznonlinearpoisson3d.h",
+				"Material/REAL/pzplaca.h",
+				"Material/REAL/pzpoisson3dreferred.h",
+				"Material/REAL/pzspacetimerichardseq.h",
+				"Material/REAL/pzthermicelast3d.h",
+				"Material/REAL/pzviscoelastic.h",
+				"Material/REAL/swelling.h",
+				"Material/REAL/tpzmultcamada.h"
+			],
+			"type" : "file"
+		}
+	],
+	"paths" : 
+	{
+		"build" : "Material/REAL",
+		"source" : "Material/REAL"
+	}
+}
