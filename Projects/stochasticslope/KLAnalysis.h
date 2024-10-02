@@ -131,6 +131,10 @@ public :
     void  GenerateNonGaussinRandomField ();
 // 	virtual void DefineGraphMesh(int dimension, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames, const std::string &plotfile)=0;
     void ExportField(string fieldname);
+
+    void  ExportField2(string fieldname);
+
+    int FindElement ( TPZCompMesh * cmesh,TPZManVector<REAL,3>&vecx, TPZManVector<REAL,3>&vecxi );
 // 	virtual void PostProcess(int resolution)=0;
 
 private:

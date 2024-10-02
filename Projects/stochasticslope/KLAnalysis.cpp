@@ -215,14 +215,18 @@ void KLAnalysis::SolveToExport(TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string>
 void  KLAnalysis::GenerateNonGaussinRandomField ( )
 {
 
-    TPZVec<REAL> mean2(1);
-    TPZVec<REAL> cov2(1);
-    TPZVec<string> file2(1);
-    int samples =2;
+    TPZVec<REAL> mean2(2);
+    TPZVec<REAL> cov2(2);
+    TPZVec<string> file2(2);
+    int samples =1000;
 
     mean2[0]=10.;
     cov2[0]=0.3;
-    file2[0]="GenerateNonGaussinRandomField.dat";
+    file2[0]="coesao.dat";
+
+    mean2[1]=30.*M_PI/180.;
+    cov2[1]=0.3;
+    file2[1]="atrito.dat";
 
 
       TPZFMatrix<REAL>  PHIt,PHI=fSolution,soltemp=fSolution;
@@ -264,7 +268,7 @@ void  KLAnalysis::GenerateNonGaussinRandomField ( )
         }
 
         LoadSolution(hhat);
-        ExportField(file2[ifield]);
+        ExportField2(file2[ifield]);
 
 
         //PrintMat ( file[ifield],hhat );
@@ -274,6 +278,98 @@ void  KLAnalysis::GenerateNonGaussinRandomField ( )
 
     fSolution=soltemp;
     std::cout << "\n Exiting  generalized eigenvalue prolem" << endl;
+
+}
+
+void KLAnalysis::ExportField2(string fieldname)
+{
+
+    std::vector<std::vector<double>> datastd;
+    std::ofstream print ( fieldname );
+
+
+    TPZGeoMesh *gmesh = this->Mesh()->Reference();
+
+    TPZAdmChunkVector<TPZGeoNode> & nodevec =  gmesh->NodeVec();
+
+    int nnodes = nodevec.NElements();
+
+    for(int inode=0;inode<nnodes;inode++)
+    {
+        TPZManVector<REAL,3> co(3),xi(2);
+        nodevec[inode].GetCoordinates(co);
+        int el = FindElement ( this->Mesh(),co,xi );
+
+        cout << "el  = " << el <<endl;
+        TPZCompEl *cel =  this->Mesh()->ElementVec()[el];
+        if(!cel)
+        {
+            continue;
+        }
+        TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
+        if(!intel)
+        {
+            continue;
+        }
+
+        TPZMaterialData data;
+        intel->InitMaterialData ( data );
+        data.fNeedsSol = true;
+
+        data.intLocPtIndex = inode;
+        intel->ComputeRequiredData ( data, xi );
+
+        //intel->ComputeSolution(xi,data);
+
+        int szz= data.sol.size();
+
+        REAL x,y,z,solu;
+        x=data.x[0];
+        y=data.x[1];
+        z=data.x[2];
+
+
+        //std::vector<double> localdata(4);
+        print << x << " "<< y<< " " << z << " ";
+        for(int isol=0;isol<szz;isol++)
+        {
+            solu=data.sol[isol][0];
+            print << solu <<" ";
+        }
+        print << endl;
+    }
+
+}
+int KLAnalysis::FindElement ( TPZCompMesh * cmesh,TPZManVector<REAL,3>&vecx, TPZManVector<REAL,3>&vecxi )
+{
+        int nels = cmesh->NElements();
+
+        REAL tol=1.e-5;
+
+        for ( int iel=0; iel<nels; iel++ ) {
+
+                TPZCompEl * cel =  cmesh->ElementVec() [iel];
+                if ( !cel ) {
+                        continue;
+                }
+                TPZGeoEl * gel = cel->Reference();
+                if ( !gel ) {
+                        continue;
+                }
+                bool find = gel->ComputeXInverse ( vecx,vecxi,tol );
+                if ( find ) {
+                        //cout << "ponto encontrado no elemento id "<<iel <<endl;
+                        //cout << "coordenadas no elemento mestre = "<< vecxi << endl;
+                        return iel;
+                } else {
+                        //cout << " ponto NAO encontrado! " <<endl;
+                        //DebugStop();
+                }
+
+        }
+
+            cout << " int KLAnalysis::FindElement  ponto NAO encontrado! " <<endl;
+            DebugStop();
 
 }
 
@@ -328,7 +424,7 @@ void KLAnalysis::ExportField(string fieldname)
             intel->ComputeRequiredData ( data, point );
 
             int szz= data.sol.size();
-            cout << "nsol = "<< szz << endl;
+            //cout << "nsol = "<< szz << endl;
             REAL x,y,z,solu;
             x=data.x[0];
             y=data.x[1];
