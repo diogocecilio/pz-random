@@ -202,7 +202,7 @@ bool TPZElastoPlasticAnalysis::IterativeProcess2 ( std::ostream &out,REAL tol,in
         //this->AssembleResidual();
 
         REAL normf  =  Norm ( fRhs )/normrhs0;
-        cout << "Iteracao n : " << ( iter ) << " : normas |Delta(Un)| e |Delta(rhs)/rhs0| : " << normu << " / " <<normf<< " | tol = "<<tol << endl;
+        //cout << "Iteracao n : " << ( iter ) << " : normas |Delta(Un)| e |Delta(rhs)/rhs0| : " << normu << " / " <<normf<< " | tol = "<<tol << endl;
         a = iter < numiter ;
         b =errordisplace > tol;
         c= errorrhs > tol;
@@ -373,6 +373,23 @@ void TPZElastoPlasticAnalysis::SetPrecond ( TPZMatrixSolver<REAL> &precond )
 {
     if ( fPrecond ) delete fPrecond;
     fPrecond = ( TPZMatrixSolver<REAL> * ) precond.Clone();
+}
+
+void TPZElastoPlasticAnalysis::SetDirectSolver(DecomposeType type,int numtheads)
+{
+    TPZSkylineStructMatrix matskl ( Mesh() );
+    matskl.SetNumThreads ( numtheads );
+    SetStructuralMatrix ( matskl );
+    TPZStepSolver<STATE> step;
+    step.SetDirect ( type );
+    long neq = Mesh()->NEquations();
+    TPZVec<long> activeEquations;
+    GetActiveEquations(activeEquations);
+    TPZEquationFilter filter(neq);
+    filter.SetActiveEquations(activeEquations);
+    matskl.EquationFilter() = filter;
+    SetStructuralMatrix(matskl);
+    SetSolver ( step );
 }
 
 void TPZElastoPlasticAnalysis::UpdatePrecond()

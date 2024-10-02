@@ -50,7 +50,7 @@ string filelocation = "/home/diogo/projects/pz-random/data";
 
 TPZGeoMesh * CreateGMeshRef ( int ref,int ref2,string file );
 TPZGeoMesh * CreateGMesh ( int ref,string file );
-
+TPZFMatrix<REAL> ExportField(TPZCompMesh * vecmesh,int isol);
 void SolveDeterministic();
 void MonteCarlo ( int a,int b );
 void MonteCarlo2 ( int a,int b );
@@ -59,23 +59,29 @@ void SolveMultiThread ( int a0,int b0,int nthreads );
 void SolveMultiThread ( void ( *function ) ( int,int ), int a0,int b0,int nthreads );
 void SolveDeterministic ( bool gimsrm=1 );
 TPZGeoMesh * CreateGMesh ( int ref,string file,std::vector<double> coordbc  );
+void  ReadFile ( std::string file,TPZFMatrix<REAL> &out );
+template <class T>
+std::vector<T> str_vec ( std::vector<std::string> &vs );
+void SettingCreateFild (string file,TPZCompMesh * cmesh );
 
 TPZGeoMesh * CreateRefMesh();
+//string filelocation2 = "/home/diogo/projects/pz-random-build-release/Projects/stochasticslope/";
+void Testing();
 
 int main()
 {
-    chrono::steady_clock sc;
-    auto start = sc.now();
+//     chrono::steady_clock sc;
+//     auto start = sc.now();
+//
+//    // SolveMultiThread(MonteCarlo2,500,1000,12);
+//       MonteCarlo2 ( 0,1 );
+//    //SolveDeterministic ( 0);
+//
+//     auto end = sc.now();
+//     auto time_span = static_cast<chrono::duration<double>> ( end - start );
+//     cout << " | total time in iterative process =  " << time_span.count() << std::endl;
 
-   // SolveMultiThread(MonteCarlo2,500,1000,12);
-   // MonteCarlo2 ( 0,1 );
-   SolveDeterministic ( 0);
-
-    auto end = sc.now();
-    auto time_span = static_cast<chrono::duration<double>> ( end - start );
-    cout << " | total time in iterative process =  " << time_span.count() << std::endl;
-
-
+//Testing();
     // MonteCarloShearRed ( 500,1000 );
     //SolveMultiThread(MonteCarloShearRed,100,200,2);
     //  SolveMultiThread(MonteCarlo,0,1000,12);
@@ -83,11 +89,127 @@ int main()
     //int srm=1;
     //int gim=0;
     //  SolveDeterministic ( 0 );
+MonteCarlo2 ( 0,2 );
+    for(int i =0;i<2;i++)
+    {
+        //ExportField();
+    }
+
+
     return 0;
+}
+void  ReadFile ( std::string file,TPZFMatrix<REAL> &out )
+{
+    string line,line2, temp;
+
+    ifstream myfile ( file );
+
+    std::vector<std::vector<double>> coords;
+    int counter=0;
+    while ( getline ( myfile, line ) )
+    {
+        std::vector<string> tokens;
+        istringstream iss ( line );
+        while ( iss >> temp ) tokens.push_back ( temp );
+        std::vector<double> input_doub_temp= str_vec<double> ( tokens );
+        coords.push_back ( input_doub_temp );
+        counter++;
+    }
+
+    out.Resize ( coords.size(),coords[1].size() );
+    for ( int iel=0; iel<coords.size(); iel++ )
+    {
+        for ( int elnode=0; elnode<coords[iel].size(); elnode++ )
+        {
+            out ( iel,elnode ) = coords[iel][elnode];
+        }
+    }
+}
+
+template <class T>
+std::vector<T> str_vec ( std::vector<std::string> &vs )
+{
+    std::vector<T> ret;
+    for ( std::vector<string>::iterator it = vs.begin(); it != vs.end(); ++it )
+    {
+        istringstream iss ( *it );
+        T temp;
+        iss >> temp;
+        ret.push_back ( temp );
+    }
+    return ret;
 }
 
 
 
+
+void SettingCreateFild (string file,TPZCompMesh * cmesh )
+{
+
+    string outco=filelocation2;
+    outco+=file;
+    cout << "outco = " << outco;
+    TPZFMatrix<REAL> readco;
+    ReadFile ( outco,readco );
+    cmesh->LoadSolution ( readco );
+
+}
+
+void Testing()
+{
+
+    int ref=2;
+    int porderfield=1;
+
+    string file =filelocation;
+    file+="/tri-struc-v2.msh";
+
+    TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfield1 = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file );
+
+    REAL lx=20.;
+    REAL ly=2.;
+    int M=150;
+    int type=3;
+    FieldTools field ( gmeshfield,lx, ly, M, type, porderfield );//aqui leak
+    FieldTools field1 ( gmeshfield1,lx, ly, M, type, porderfield );//aqui leak
+
+    lx=8.;
+    ly=2.;//indiferente para tipo 4
+    M=150;
+    type=4;
+    FieldTools field2 ( gmeshfield2,lx, ly, M, type, porderfield );//aqui leak
+
+
+    TPZCompMesh* meshcoes = field.SettingCreateFild ( "cohes.txt" );
+    TPZCompMesh* meshphi = field1.SettingCreateFild ( "fric.txt" );
+    TPZCompMesh* meshperm = field2.SettingCreateFild ("perm.txt" );
+
+
+    TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file );
+
+    REAL E=20000.;
+    REAL nu=0.49;
+    REAL coes = 10.;
+    REAL phi=30*M_PI/180.;
+    REAL gammaagua=0.;
+    REAL gammasolo=20.;
+    int numthreads=10;
+    int porder=2;
+
+
+    PlasticityTools plastictool( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+
+   TPZCompMesh *newcmesh(plastictool.fcmesh);
+
+    SettingCreateFild ( "cohes.txt",newcmesh );
+
+    plastictool.TransferingSol(newcmesh);
+
+    //newcmesh->Print(cout);
+
+}
 
 
 
@@ -111,10 +233,10 @@ void MonteCarlo2 ( int a,int b )
         }
 
 
-    int ref=3;
+    int ref=2;
     int porder=2;
     int porderfield=1;
-    int nref=2;
+    int nref=0;
 
     string file =filelocation;
     file+="/tri-struc-v2.msh";
@@ -167,10 +289,10 @@ void MonteCarlo2 ( int a,int b )
     filefieldsperm[0]="perm.txt";
     covperm[0]=0.5;
     TPZManVector<TPZCompMesh*,3> vecmesh ( 3 );
-    if ( false )
+    if ( true )
     {
-        field.ComputeFields ( mean ,   cov , filefields, samples );
-        field2.ComputeFields ( meanperm ,   covperm , filefieldsperm, samples );
+        field.ComputeFieldExport ( mean ,   cov , filefields, samples );
+        //field2.ComputeFields ( meanperm ,   covperm , filefieldsperm, samples );
         return;
     }
     else
@@ -180,8 +302,34 @@ void MonteCarlo2 ( int a,int b )
         vecmesh[2] = field2.SettingCreateFild ( filefieldsperm[0] );
     }
 
-    for ( int imc=a; imc<b; imc++ )
+    std::ofstream print ( "teste2" );
+
+    TPZElastoPlasticAnalysis * anal = new TPZElastoPlasticAnalysis(vecmesh[0]);
+
+    anal->AssembleResidual();
+    anal->LoadSolution(anal->Rhs());
+
+//       TPZFMatrix<REAL> pzdata = ExportField(anal->Mesh(),0 );
+//
+//
+//           int row=pzdata.Rows();
+//     int cols = pzdata.Cols();
+//
+//     for ( int i=0; i<row; i++ )
+//     {
+//         for ( int j=0; j<cols; j++ )
+//         {
+//             print << pzdata ( i,j ) << " ";
+//         }
+//         print<< std::endl;
+//     }
+//
+//     print<<"end"<< endl;
+
+      return;
+    for ( int imc=0; imc<=2; imc++ )
     {
+
 
 
          TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file );
@@ -215,6 +363,15 @@ void MonteCarlo2 ( int a,int b )
         REAL Hw=10.;
         REAL Ht=40.;
 
+        DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder);
+       // PlasticityTools plastictoolstempx ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+
+
+
+
+
+
+        continue;
         for ( iref=1; iref<=nref; iref++ )
         {
 
@@ -223,6 +380,9 @@ void MonteCarlo2 ( int a,int b )
 
 
             PlasticityTools plastictoolstemp ( gmeshpalstic,E, nu, coes,phi,gammaagua,gammasolo,numthreads,porder );
+
+
+
             std::set<long> elindices;
             DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder);
             if(flux)
@@ -257,7 +417,7 @@ void MonteCarlo2 ( int a,int b )
         l =0.5;
         lambda0=0.5;
         cout << "END REFING.."<< endl;
-        DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder );
+        //DarcyTools darcytools ( gmeshdarcy,H,Hw,Ht,gammaagua,porder );
         if(flux)
         {
             cout << " setting flux"<< endl;
@@ -294,6 +454,87 @@ void MonteCarlo2 ( int a,int b )
         delete gmeshdarcy;
     }
 }
+
+
+TPZFMatrix<REAL> ExportField(TPZCompMesh * vecmesh,int isol)
+{
+
+    std::vector<std::vector<double>> datastd;
+    std::ofstream print ( "teste" );
+
+    int nels =  vecmesh->NElements();
+
+    TPZMaterial *mat1 = vecmesh->FindMaterial ( 1 );
+    if ( !mat1 )
+    {
+        DebugStop();
+    }
+
+    for ( int iel=0; iel<nels; iel++ )
+    {
+        TPZCompEl *cel = vecmesh->ElementVec() [iel];
+        if ( !cel )
+        {
+            continue;
+        }
+        TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
+        if ( !intel )
+        {
+            continue;
+        }
+
+        TPZGeoEl *gel = cel->Reference();
+
+        TPZMaterialData data;
+        data.fNeedsSol = true;
+        intel->InitMaterialData ( data );
+        if ( true )
+        {
+
+            REAL co[8][2] = {{-1,-1},{1,-1},{1,1},{-1,1},{0,-1},{1,0},{0,1},{-1,0}};
+            for ( int p = 0; p<1; p++ )
+            {
+
+
+                TPZManVector<REAL,3> qsi ( 2,0. ),xco ( 3,0. );
+                qsi[0] = 0;
+                qsi[1] =0;
+                //gel->X ( qsi, xco );
+                intel->ComputeRequiredData ( data, qsi );
+                intel->ComputeSolution(qsi,data);
+                 REAL x,y,z,solu;
+                 x=data.x[0];
+                 y=data.x[1];
+                 z=data.x[2];
+                 solu=data.sol[0][0];
+//
+                 if(solu>1.e-3)
+                 {
+                 std::vector<double> localdata(4);
+                 print << x << " "<< y<< " " << z << " "<< solu <<std::endl;
+                 localdata[0]=x;
+                 localdata[1]=y;
+                 localdata[2]=z;
+                 localdata[3]=solu;
+                 datastd.push_back(localdata);
+                 }
+            }
+        }
+    }
+
+    int sz=datastd.size();
+    TPZFMatrix<REAL> pzdata(sz,4);
+    for(int i=0;i<sz;i++)
+    {
+        pzdata(i,0)=datastd[i][0];
+        pzdata(i,1)=datastd[i][1];
+        pzdata(i,2)=datastd[i][2];
+        pzdata(i,3)=datastd[i][3];
+    }
+    return pzdata;
+}
+
+
 
 void MonteCarlo ( int a,int b )
 {
@@ -468,19 +709,19 @@ void MonteCarlo ( int a,int b )
 void SolveDeterministic ( bool gimsrm )
 {
 
-    int ref=2;
+    int ref=1;
     int porder=3;
-    int nref=0;
+    int nref=3;
 
     string file =filelocation;
-    //file+="/tri-struc-v2.msh";
+    file+="/tri-struc-v2.msh";
    // file+="/mesh2x1cho.msh";
    // file+="/mesh2x1choeq.msh";
-    file+="/gidmesh.msh";
+    //file+="/gidmesh.msh";
     std::vector<double> coordbc(3);
     coordbc[0]=30.;coordbc[1]=5.;coordbc[2]=5.;
-   // coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
-    coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=5.;
+    coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
+    //coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=5.;
     TPZGeoMesh *gmeshpalstic = CreateGMesh ( ref,file,coordbc );
     //CreateGMesh ( int ref,string file,std::vector<double> coordbc )
     TPZGeoMesh *gmeshdarcy = CreateGMesh ( ref,file,coordbc  );
@@ -489,8 +730,8 @@ void SolveDeterministic ( bool gimsrm )
     REAL gammasolo=20.;
    // REAL coes=10.;
    // REAL phi=30.*M_PI/180.;
-    REAL coes=23.;
-    REAL phi=0.01*M_PI/180.;
+    REAL coes=10.;
+    REAL phi=30*M_PI/180.;
     REAL E=20000.;
     REAL nu =0.49;
     int numthreads=20;
@@ -498,7 +739,7 @@ void SolveDeterministic ( bool gimsrm )
     REAL tolfs =0.1;
     int numiterfs =100;
     REAL tolres = 1.e-6;
-    int numiterres =30;
+    int numiterres =10;
     REAL l =1;
     REAL lambda0=0.1;
 
@@ -526,6 +767,11 @@ void SolveDeterministic ( bool gimsrm )
         // elindices2=elindices;
 
     }
+
+    cout << "pos-processando.. " << iref << endl;
+    string meshref = "malharefinada.vtk";
+    std::ofstream files ( meshref );
+    TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
 
     l =0.1;
     lambda0=0.1;
@@ -567,10 +813,7 @@ void SolveDeterministic ( bool gimsrm )
     }
 
 
-    cout << "pos-processando.. " << iref << endl;
-    string meshref = "malharefinada.vtk";
-    std::ofstream files ( meshref );
-    TPZVTKGeoMesh::PrintGMeshVTK ( gmeshpalstic,files,true );
+
 
 
     string vtk1 = "saida-talude.vtk";

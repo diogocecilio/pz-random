@@ -291,9 +291,10 @@ void TPZPostProcAnalysis::Solve(){
 void TPZPostProcAnalysis::TransferSolution()
 {
 
-    
+    //Monta o vetor de carga com os dados da malha computacional
     TPZAnalysis::AssembleResidual();
     fSolution = Rhs();
+    //Carrega a o rhs como solucao
     TPZAnalysis::LoadSolution();
     
     TPZCompMeshReferred *compref = dynamic_cast<TPZCompMeshReferred *>(Mesh());

@@ -207,6 +207,147 @@ void KLAnalysis::Solve()
 
 }
 
+void KLAnalysis::SolveToExport(TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file, int samples)
+{
+
+}
+
+void  KLAnalysis::GenerateNonGaussinRandomField ( )
+{
+
+    TPZVec<REAL> mean2(1);
+    TPZVec<REAL> cov2(1);
+    TPZVec<string> file2(1);
+    int samples =2;
+
+    mean2[0]=10.;
+    cov2[0]=0.3;
+    file2[0]="GenerateNonGaussinRandomField.dat";
+
+
+      TPZFMatrix<REAL>  PHIt,PHI=fSolution,soltemp=fSolution;
+
+    int nsamples = samples;
+
+    int M = PHI.Cols();
+
+    int nfields=mean2.size();
+
+
+    for(int ifield=0;ifield<nfields;ifield++)
+    {
+        std::normal_distribution<REAL> distribution ( 0., 1. );
+        TPZFMatrix<REAL> THETA (M,samples );
+
+        for ( int n = 0; n < samples; n++ ) {
+            for ( int iexp = 0; iexp < M; iexp++ ) {
+                std::random_device rd{};
+                std::mt19937 generator{ rd() };
+                REAL xic = distribution ( generator );
+                THETA(iexp,n) = xic;
+            }
+    }
+
+        TPZFMatrix<REAL> hhat;
+        PHI.Multiply ( THETA, hhat );
+
+
+        REAL sdev = cov2[ifield] * mean2[ifield];
+        REAL xi = sqrt ( log ( 1 + pow ( ( sdev / mean2[ifield] ),2 ) ) );
+        REAL lambda = log ( mean2[ifield] ) - xi * xi / 2.;
+
+        for ( int i = 0; i < hhat.Rows(); i++ ) {
+            for ( int j = 0; j < hhat.Cols(); j++ ) {
+                hhat(i,j) = exp ( lambda + xi * hhat(i,j) );
+            }
+
+        }
+
+        LoadSolution(hhat);
+        ExportField(file2[ifield]);
+
+
+        //PrintMat ( file[ifield],hhat );
+
+    }
+
+
+    fSolution=soltemp;
+    std::cout << "\n Exiting  generalized eigenvalue prolem" << endl;
+
+}
+
+void KLAnalysis::ExportField(string fieldname)
+{
+
+    std::vector<std::vector<double>> datastd;
+    std::ofstream print ( fieldname );
+
+    int nels =  this->Mesh()->NElements();
+
+    TPZMaterial *mat1 = this->Mesh()->FindMaterial ( 1 );
+    if ( !mat1 )
+    {
+        DebugStop();
+    }
+
+    for ( int iel=0; iel<nels; iel++ )
+    {
+        TPZCompEl *cel = this->Mesh()->ElementVec() [iel];
+        if ( !cel )
+        {
+            continue;
+        }
+        TPZInterpolationSpace *intel = dynamic_cast<TPZInterpolationSpace *> ( cel );
+        if ( !intel )
+        {
+            continue;
+        }
+
+        TPZGeoEl *gel = cel->Reference();
+        if ( !gel )
+        {
+            continue;
+        }
+
+
+        const TPZIntPoints &intpoints = intel->GetIntegrationRule();
+        int nint = intpoints.NPoints();
+        TPZManVector<REAL,3> point ( 3,0. );
+        TPZMaterialData data;
+        intel->InitMaterialData ( data );
+        data.fNeedsSol = true;
+
+        TPZManVector<REAL,3> qsi ( 2,0. );
+
+        for ( long ip =0; ip<nint; ip++ )
+        {
+            REAL weight;
+            intpoints.Point ( ip, point, weight );
+            data.intLocPtIndex = ip;
+            intel->ComputeRequiredData ( data, point );
+
+            int szz= data.sol.size();
+            cout << "nsol = "<< szz << endl;
+            REAL x,y,z,solu;
+            x=data.x[0];
+            y=data.x[1];
+            z=data.x[2];
+
+
+            //std::vector<double> localdata(4);
+            print << x << " "<< y<< " " << z << " ";
+            for(int isol=0;isol<szz;isol++)
+            {
+                solu=data.sol[isol][0];
+                print << solu <<" ";
+            }
+            print << endl;
+        }
+
+    }
+    //return pzdata;
+}
 // /*
 // void KLAnalysis::Solve()
 // {

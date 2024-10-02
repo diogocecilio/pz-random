@@ -33,6 +33,8 @@ public:
 
     void ComputeField (REAL mean,REAL cov,int samples );
 
+    void ComputeFieldExport (TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples );
+
     void ComputeFields (REAL mean1,REAL mean2,REAL cov1, REAL cov2,int samples,REAL crossfac,string file1,string file2);
 
     void ComputeFields (TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples);
@@ -111,6 +113,21 @@ TPZCompMesh* FieldTools::CreateCompMeshKL ( )
     return cmesh1;
 }
 
+void FieldTools::ComputeFieldExport (TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file,int samples)
+{
+    KLAnalysis * klanal = new KLAnalysis ( fcmesh );
+
+    KLMaterial *mat = dynamic_cast<KLMaterial*> ( fcmesh->MaterialVec() [1] );
+
+    klanal->SetExpansionOrder ( mat->GetExpansioOrder() );
+
+    klanal->Solve();
+
+    //klanal->ExportField("testandooooo.dat");
+    klanal->GenerateNonGaussinRandomField ( );
+
+}
+
 void FieldTools::ComputeField ( REAL mean,REAL cov,int samples)
 {
 
@@ -162,13 +179,23 @@ void FieldTools::ComputeFields (TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string
 
     klanal->Solve();
 
+    //klanal->ExportField();
+
     TPZFMatrix<REAL> eigenfunctions = klanal->Solution();
 
+    //ExportField(klanal->Mesh(),0);
 
     GenerateNonGaussinRandomField (eigenfunctions,   mean, cov,  file,  samples);
 
+    //klanal->LoadSolution()
+
 
 }
+
+
+
+
+
 
 TPZFMatrix<REAL> FieldTools::CreateLogNormalRandomField ( TPZFMatrix<REAL> PHI, REAL mean, REAL cov,int samples,string outdata )
 {
@@ -385,6 +412,7 @@ TPZCompMesh * FieldTools::SettingCreateFild (string file )
 
     TPZElastoPlasticAnalysis * analysis1x  = new TPZElastoPlasticAnalysis ( cmesh );
     analysis1x->LoadSolution ( readco );
+    fcmesh->LoadSolution(readco);
 
     delete analysis1x;
     return fcmesh;

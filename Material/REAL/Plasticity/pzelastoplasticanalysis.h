@@ -12,7 +12,7 @@
 #include <iostream>
 #include <Eigen/OrderingMethods>
 #include <Eigen/PardisoSupport>
-
+#include <pzskylstrmatrix.h>
 
 #include "pznonlinanalysis.h"
 #include "pzcompel.h"
@@ -117,6 +117,7 @@ public:
 	
 	void SetBiCGStab_Jacobi(int numiter, REAL tol);
 
+    void SetDirectSolver(DecomposeType type,int numtheads);
 	
 	void SetLU();
 	

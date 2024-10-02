@@ -64,6 +64,8 @@ public :
 
     void Solve();
 
+    void SolveToExport(TPZVec<REAL> mean,TPZVec<REAL> cov,TPZVec<string> file, int samples);
+
     void FromEigen ( MatrixXd eigenmat, TPZFMatrix<REAL>  &pzmat )
     {
 
@@ -125,8 +127,10 @@ public :
     }
 
     void Assemble();
+
+    void  GenerateNonGaussinRandomField ();
 // 	virtual void DefineGraphMesh(int dimension, const TPZVec<std::string> &scalnames, const TPZVec<std::string> &vecnames, const std::string &plotfile)=0;
-//
+    void ExportField(string fieldname);
 // 	virtual void PostProcess(int resolution)=0;
 
 private:
