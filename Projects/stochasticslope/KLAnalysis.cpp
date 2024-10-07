@@ -40,10 +40,10 @@ using namespace std;
 
 
 
-KLAnalysis::KLAnalysis ( TPZCompMesh *mesh ) : TPZAnalysis ( mesh,true )
+KLAnalysis::KLAnalysis ( TPZCompMesh *mesh ) : TPZAnalysis ( mesh,false )
 {
 
-	OptimizeBandwidth();
+	//OptimizeBandwidth();
     KLStrMatrix *strmat = new KLStrMatrix ( mesh );
     strmat->SetMesh ( mesh );
     fStrMatrix = strmat;
@@ -268,7 +268,11 @@ void  KLAnalysis::GenerateNonGaussinRandomField ( )
         }
 
         LoadSolution(hhat);
-        ExportField2(file2[ifield]);
+        std::ofstream print(file2[ifield]);
+       // Print(const char *name, std::ostream& out,const MatrixOutputFormat form);
+        //std::stringstream sout("das");
+        hhat.Print(print);
+        //ExportField2(file2[ifield]);
 
 
         //PrintMat ( file[ifield],hhat );
