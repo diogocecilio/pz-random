@@ -47,7 +47,7 @@
 #define EIGEN_USE_MKL_ALL
 string filelocation = "/home/diogo/projects/pz-random/data";
 
-
+TPZGeoMesh *  CreateGMeshSlope ( int ref );
 TPZGeoMesh * CreateGMeshRef ( int ref,int ref2,string file );
 TPZGeoMesh * CreateGMesh ( int ref,string file );
 TPZFMatrix<REAL> ExportField(TPZCompMesh * vecmesh,int isol);
@@ -98,6 +98,101 @@ MonteCarlo2 ( 0,2 );
 
     return 0;
 }
+
+TPZGeoMesh *  CreateGMeshSlope ( int ref )
+{
+        const std::string name ( "Darcy Flow Slope" );
+
+        TPZGeoMesh *gmesh  =  new TPZGeoMesh();
+
+        gmesh->SetName ( name );
+
+        gmesh->SetDimension ( 2 );
+
+        TPZVec<REAL> coord ( 2 );
+
+        vector<vector<double>> co= {
+                {0., 0.}, {75., 0.}, {75., 30.},{45., 30.},
+                {35., 40.}, {0.,40.},{35./3., 40.},{2 * 35/3., 40.},
+                {30., 40.},{30., 30.}, {60.,30.},{2* 35./3.,2* 35/3.},
+                {45., 2* 35/3.},{35./3., 35/3.}, {60., 35./3.}
+        };
+        vector<vector<int>> topol = {
+                {0,  1,  14, 13},{1,  2,  10, 14}, {14, 10, 3,  12},
+                {13, 14, 12, 11},{11, 12, 3,  9}, {9,  3,  4,  8},
+                {11, 9,  8,  7},{13, 11, 7, 6},{0, 13,  6, 5}
+        };
+
+        gmesh->NodeVec().Resize ( co.size() );
+
+        for ( int inode=0; inode<co.size(); inode++ ) {
+                coord[0] = co[inode][0];
+                coord[1] = co[inode][1];
+                gmesh->NodeVec() [inode] = TPZGeoNode ( inode, coord, *gmesh );
+        }
+        TPZVec <long> TopoQuad ( 4 );
+        for ( int iel=0; iel<topol.size(); iel++ ) {
+                TopoQuad[0] = topol[iel][0];
+                TopoQuad[1] = topol[iel][1];
+                TopoQuad[2] =	topol[iel][2];
+                TopoQuad[3] = topol[iel][3];
+                new TPZGeoElRefPattern< pzgeom::TPZGeoQuad> ( iel, TopoQuad, 1,*gmesh );
+        }
+
+
+
+
+        int id = topol.size();
+        TPZVec <long> TopoLine ( 2 );
+        TopoLine[0] = 0;
+        TopoLine[1] = 1;
+        new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( id, TopoLine, -1, *gmesh );//bottom
+
+        id++;
+        TopoLine[0] = 1;
+        TopoLine[1] = 2;
+        new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( id, TopoLine, -2, *gmesh );//rigth
+
+        id++;
+        TopoLine[0] = 2;
+        TopoLine[1] = 3;
+        new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( id, TopoLine, -3, *gmesh );//top-rigth
+
+        id++;
+        TopoLine[0] = 4;
+        TopoLine[1] = 5;
+        new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( id, TopoLine, -4, *gmesh ); //top-left
+
+        id++;
+        TopoLine[0] = 3;
+        TopoLine[1] = 4;
+        new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( id, TopoLine, -6, *gmesh ); //ramp
+
+        id++;
+        TopoLine[0] = 5;
+        TopoLine[1] = 0;
+        new TPZGeoElRefPattern< pzgeom::TPZGeoLinear> ( id, TopoLine, -5, *gmesh ); //left
+
+
+
+
+
+        gmesh->BuildConnectivity();
+        for ( int d = 0; d<ref; d++ ) {
+                int nel = gmesh->NElements();
+                TPZManVector<TPZGeoEl *> subels;
+                for ( int iel = 0; iel<nel; iel++ ) {
+                        TPZGeoEl *gel = gmesh->ElementVec() [iel];
+                        gel->Divide ( subels );
+                }
+        }
+
+        string meshref = "gmesh.vtk";
+        std::ofstream files ( meshref );
+        TPZVTKGeoMesh::PrintGMeshVTK ( gmesh,files,true );
+        return gmesh;
+}
+
 void  ReadFile ( std::string file,TPZFMatrix<REAL> &out )
 {
     string line,line2, temp;
@@ -233,7 +328,7 @@ void MonteCarlo2 ( int a,int b )
         }
 
 
-    int ref=2;
+    int ref=4;
     int porder=2;
     int porderfield=1;
     int nref=0;
@@ -243,10 +338,13 @@ void MonteCarlo2 ( int a,int b )
     std::vector<double> coordbc(3);
 
     coordbc[0]=75.;coordbc[1]=30.;coordbc[2]=10.;
-    TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfield1 = CreateGMesh ( ref,file );
-    TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file );
 
+//     TPZGeoMesh *gmeshfield = CreateGMesh ( ref,file );
+//     TPZGeoMesh *gmeshfield1 = CreateGMesh ( ref,file );
+//     TPZGeoMesh *gmeshfield2 = CreateGMesh ( ref,file );
+    TPZGeoMesh *gmeshfield = CreateGMeshSlope ( ref );
+    TPZGeoMesh *gmeshfield1 = CreateGMeshSlope ( ref );
+    TPZGeoMesh *gmeshfield2 = CreateGMeshSlope ( ref );
     REAL gammaagua=0.;
     if(flux)
     {
